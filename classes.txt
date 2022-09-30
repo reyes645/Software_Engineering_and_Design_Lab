@@ -1,0 +1,17 @@
+class user
+- username
+- password
+- projects_list
+- token
+- user_id
+
+class project
+- project_name
+- project_id
+- hw1
+- hw2
+- collaborators[]
+
+class hardware
+- gbs
+- name
