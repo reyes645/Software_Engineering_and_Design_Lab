@@ -19,16 +19,19 @@ class User:
     def set_password(self, password):
         self.password = password
 
-    def set_user_ID(self, userID):
-        self.user_id = userID
+    def get_password(self):
+        return self.password
 
-    def get_user_ID(self):
+    def set_user_id(self, user_id):
+        self.user_id = user_id
+
+    def get_user_id(self):
         return self.user_id
 
-    def set_password_ID(self, passwordID):
-        self.password_id = passwordID
+    def set_password_id(self, password_id):
+        self.password_id = password_id
 
-    def get_password_ID(self):
+    def get_password_id(self):
         return self.password_id
 
     def set_token(self, token):
@@ -40,8 +43,13 @@ class User:
     def add_project(self, project):
         self.project_list.append(project)
 
-    def get_projectList(self):
-        return self.project_list
+    # returns a list of project IDs
+    # can change this to any other identifier, such as an project name
+    def get_project_list(self):
+        a = []
+        for proj in self.project_list:
+            a.append(proj.get_project_id())
+        return a
 
 
 class Project:
@@ -66,23 +74,47 @@ class Project:
     def get_project_id(self):
         return self.project_id
 
+    # sets the capacity of hw1
     def set_hw1(self, capacity):
         self.hw1 = HardwareSet(capacity)
 
+    # gets the availability of hw1
     def get_hw1(self):
         return self.hw1.get_availability()
 
+    # uses some amount of available space in hw1
+    def use_hw1(self, qty):
+        self.hw1.check_out(qty)
+
+    # return some amount of hardware to gw1
+    def return_hw1(self, qty):
+        self.hw1.check_in(qty)
+
+    # sets the capacity of hw2
     def set_hw2(self, capacity):
         self.hw2 = HardwareSet(capacity)
 
+    # gets the availability of hw2
     def get_hw2(self):
         return self.hw2.get_availability()
+
+    def use_hw2(self, qty):
+        self.hw2.check_out(qty)
+
+    def return_hw2(self, qty):
+        self.hw2.check_in(qty)
 
     def add_collaborator(self, collaborator):
         self.collaborators.append(collaborator)
 
+    # returns a list of collaborator usernames
+    # can change this to any other identifier, such as an id
     def get_collaborators(self):
-        return self.collaborators
+        a = []
+        for person in self.collaborators:
+            a.append(person.get_username())
+        return a
+
 
 class HardwareSet:
     capacity1 = 0
@@ -101,6 +133,8 @@ class HardwareSet:
     def get_checkedout_qty(self):
         return self.capacity1 - self.available1
 
+    # returns a -1 if the amount you want to check out is more than the amount available
+    # still checks out the available hardware
     def check_out(self, qty):
         if qty > self.available1:
             self.available1 = 0
