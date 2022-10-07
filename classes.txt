@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 class user
 - username
 - password
@@ -15,3 +16,22 @@ class project
 class hardware
 - gbs
 - name
+=======
+class user
+- username
+- password
+- projects_list
+- token
+- user_id
+
+class project
+- project_name
+- project_id
+- hw1
+- hw2
+- collaborators[]
+
+class hardware
+- gbs
+- name
+>>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391

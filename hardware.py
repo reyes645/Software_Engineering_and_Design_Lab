@@ -11,8 +11,16 @@ class Hardware:
         Hardware.availability2 = av2
 
     def check_out_hw(self, one, two):
+<<<<<<< HEAD
+        #implement pls
+        pass
+
+    def check_in_hw(self, one, two):
+        #implement pls
+=======
 
         pass
 
     def check_in_hw(self, one, two):
+>>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
         pass
