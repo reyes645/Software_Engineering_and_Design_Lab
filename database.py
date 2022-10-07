@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from pymongo import MongoClient
 
 
