@@ -1,10 +1,6 @@
 from user import User
 from project import Project
-<<<<<<< HEAD
 from database import Database
-=======
-import database
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
 from hardware import Hardware
 
 
@@ -26,7 +22,6 @@ def take_request(global_request):
 
 if __name__ == '__main__':
 
-<<<<<<< HEAD
     #initialize database
     db = Database()
 
@@ -45,17 +40,6 @@ if __name__ == '__main__':
     #                   initialization when database has not been set.
     # availHW1 = 1000
     # availHW2 = 1000
-=======
-    #Take request
-    global_request = ''
-
-    #Through hardware database initialize global hardware
-    maxHW1 = 1000
-    maxHW2 = 1000
-
-    availHW1 = 1000
-    availHW2 = 1000
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
     globalHardware = Hardware(maxHW1, maxHW2, availHW1, availHW2)
 
     while True:
@@ -67,12 +51,7 @@ if __name__ == '__main__':
             password = ''
 
             currentUser = User()
-<<<<<<< HEAD
             errcheck = currentUser.signup(username, password, db)
-=======
-            errcheck = currentUser.signup(username, password)
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
-
 
         elif requestType == 'login':
             #get username and password from request
@@ -81,11 +60,7 @@ if __name__ == '__main__':
 
 
             currentUser = User()
-<<<<<<< HEAD
             currentUser.login(username, password, db)
-=======
-            currentUser.login(username, password)
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
 
 
         elif requestType == 'logout':
@@ -93,17 +68,10 @@ if __name__ == '__main__':
             pass
 
 
-<<<<<<< HEAD
         elif requestType == 'project_page': #to implement
             #get username from request
             #from username go to database and find user object
             #could send entire user
-=======
-        elif requestType == 'project_page':
-            #get username from request
-            #from username go to database and find user object
-            #could send entire user object or just object_list[]
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
             pass
 
 
@@ -113,11 +81,7 @@ if __name__ == '__main__':
             project_name = ''
 
             currentUser = User()
-<<<<<<< HEAD
             currentUser.add_project(username, project_name, db)
-=======
-            currentUser.add_project(username, project_name)
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
 
         elif requestType == 'join_project':
             # find username, unique project_id in request
@@ -125,11 +89,7 @@ if __name__ == '__main__':
             project_id = ''
 
             currentUser = User()
-<<<<<<< HEAD
             currentUser.join_project(username, project_id, db)
-=======
-            currentUser.join_project(username, project_id)
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
 
         elif requestType == 'edit_proj':
             # find unique username, unique project_id in request
@@ -137,55 +97,67 @@ if __name__ == '__main__':
             project_id = ''
 
             currentUser = User()
-<<<<<<< HEAD
             currentUser.edit_proj(username, project_id, db)
 
         elif requestType == 'check_out_hw': #implement pls
-=======
-            currentUser.edit_proj(username, project_id)
-
-        elif requestType == 'check_out_hw':
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
             #find unique project_id, hw1, hw2 in request
             project_id = ''
             hw1 = 0
             hw2 = 0
 
             curProject = Project()
-<<<<<<< HEAD
             #find curProject attributes and put in curProject from database
-            curProject.project_name = db.project_collection.find({'proj_id': project_id}).projname
+            # curProject.project_name = db.project_collection.find({'proj_id': project_id}).projname
+            cursor = db.project_collection.find({'proj_id': project_id})
+            for temp in cursor:
+                projName = temp['project_name']
+            curProject.project_name = projName
             curProject.project_id = project_id
-            curProject.hw1 = db.project_collection.find({'proj_id': project_id}).hw1
-            curProject.hw2 = db.project_collection.find({'proj_id': project_id}).hw2
-            curProject.collaborators = db.project_collection.find({'proj_id': project_id}).collab
-=======
-            #find curProject attributes and put in curProject
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
+            # curProject.hw1 = db.project_collection.find({'proj_id': project_id}).hw1
+            cursor = db.project_collection.find({'proj_id': project_id})
+            for temp in cursor:
+                hard1 = temp['hw1']
+            curProject.hw1 = hard1
+            # curProject.hw2 = db.project_collection.find({'proj_id': project_id}).hw2
+            cursor = db.project_collection.find({'proj_id': project_id})
+            for temp in cursor:
+                hard2 = temp['hw2']
+            curProject.hw2 = hard2
+            # curProject.collaborators = db.project_collection.find({'proj_id': project_id}).collaborators
+            cursor = db.project_collection.find({'proj_id': project_id})
+            for temp in cursor:
+                collab = temp['collaborators']
+            curProject.collaborators = collab
 
+            Project.checkout_hw(project_id, hw1, hw2)
 
-            Project.checkout_hw(project_id,hw1,hw2)
-
-<<<<<<< HEAD
         elif requestType == 'check_in_hw': #implement pls
-=======
-        elif requestType == 'check_in_hw':
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
             # find unique project_id, hw1, hw2 in request
             project_id = ''
             hw1 = 0
             hw2 = 0
 
             curProject = Project()
-<<<<<<< HEAD
-            # find curProject attributes and put in curProject from database
-            curProject.project_name = db.project_collection.find({'proj_id': project_id}).projname
+            # find curProject attributes and put in curProject from database 
+            
+            # curProject.project_name = db.project_collection.find({'proj_id': project_id}).project_name
+            # curProject.project_id = project_id
+            # curProject.hw1 = db.project_collection.find({'proj_id': project_id}).hw1
+            # curProject.hw2 = db.project_collection.find({'proj_id': project_id}).hw2
+            # curProject.collaborators = db.project_collection.find({'proj_id': project_id}).collaborators
+            
             curProject.project_id = project_id
-            curProject.hw1 = db.project_collection.find({'proj_id': project_id}).hw1
-            curProject.hw2 = db.project_collection.find({'proj_id': project_id}).hw2
-            curProject.collaborators = db.project_collection.find({'proj_id': project_id}).collab
-=======
-            # find curProject attributes and put in curProject
->>>>>>> 718e7b04766f0b1112aad1688bedc7369680b391
+            
+            cursor = db.project_collection.find({'proj_id': project_id})
+            for temp in cursor:
+                projName = temp['proj_name']
+                hard1 = temp['hw1']
+                hard2 = temp['hw2']
+                collab = temp['collaborators']
+                
+            curProject.project_name = projName
+            curProject.hw1 = hard1
+            curProject.hw2 = hard2
+            curProject.collaborators = collab
 
             Project.checkin_hw(project_id, hw1, hw2)
