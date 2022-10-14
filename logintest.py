@@ -6,6 +6,10 @@ from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
+someuserdocument = {
+
+}
+
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     if request.method == 'POST':
@@ -14,7 +18,10 @@ def login():
             # actual_password = temp['password']
         # if request.form['password'] == actual_password:
             #return "pass"
-        return "fail"
+        return {
+            "status": "fail",
+            "user_document": someuserdocument
+        }
     else:
         return render_template('login.html')
 
