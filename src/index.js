@@ -11,7 +11,72 @@ class HWSET extends React.Component {
 
 class Project extends React.Component {
   render() {
+    const handleCheck_in = async() =>{
+      try{
+        const response = await fetch('http://3.16.154.17:8080/project/{project_id}/checkin', {
+          'method': 'POST',
+          'body': {
+            'token': '',
+            'hw1': '',
+            'hw2': ''
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error! status: ${response.status}`);
+        }
 
+        const result = await response.json();
+      } catch {
+
+      } finally {
+
+      }
+    }
+
+    const handleCheck_out = async() =>{
+      try{
+        const response = await fetch('http://3.16.154.17:8080/project/{project_id}/checkout', {
+          'method': 'POST',
+          'body': {
+            'token': '',
+            'hw1': '',
+            'hw2': ''
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+      } catch {
+
+      } finally {
+
+      }
+    }
+    const handleJoin = async() =>{
+      try{
+        const response = await fetch('http://3.16.154.17:8080/user/join_project', {
+          'method': 'POST',
+          'body': {
+            'token': '',
+            'project_id': '',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+      } catch {
+
+      } finally {
+
+      }
+    }
     return (
       <div>
         <hr />
@@ -24,8 +89,8 @@ class Project extends React.Component {
           variant="filled"
           size="small"
         />
-        <Button variant="outlined">Check In</Button>
-        <Button variant="outlined">Check out</Button>
+        <Button variant="outlined" onClick={handleCheck_in}>Check In</Button>
+        <Button variant="outlined" onClick={handleCheck_out}>Check out</Button>
         <HWSET properties={this.props.properties.hwsets[1]} />
         <TextField
           hiddenLabel
