@@ -16,6 +16,14 @@ someuserdocument = {
 
 }
 
+proj_doc_test = {
+    "project_name": "",
+    "project_id": "",
+    "hw1": "",
+    "hw2": "",
+    "collaborators": []
+}
+
 def clear():
     someuserdocument["username"] = ""
     someuserdocument["password"] = ""
@@ -23,6 +31,13 @@ def clear():
     someuserdocument["password_id"] = ""
     someuserdocument["token"] = ""
     someuserdocument["project_list"] = []
+
+def clear2():
+    proj_doc_test["project_name"] = ""
+    proj_doc_test["project_id"] = ""
+    proj_doc_test["hw1"] = ""
+    proj_doc_test["hw2"] = ""
+    proj_doc_test["collaborators"] = []
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -87,6 +102,32 @@ def project_edit():
 def project_add():
     if request.method == 'GET':
         return render_template("project_add.html")
+    else:
+        return "fail"
+
+@app.route('/project/<int:project_id>', methods = ['POST'])
+def get_proj_doc(project_id):
+    if request.method == 'POST':
+        # debugging method
+        clear2()
+
+        # will only work for project_id == 0 for now because thats the only id in the database
+        # if db.project_collection.count({'project_id': {"$in": project_id}}) != 1:
+        #     return "fail"
+
+        cursor = db.project_collection.find({'project_id': project_id})
+        for temp in cursor:
+            proj_doc_test["project_name"] = temp['project_name']
+            proj_doc_test["project_id"] = temp['project_id']
+            proj_doc_test["hw1"] = temp['hw1']
+            proj_doc_test["hw2"] = temp['hw2']
+            proj_doc_test["collaborators"] = temp['collaborators']
+        if proj_doc_test['project_id'] == "":
+            return {
+                "status": "fail",
+                "explaination": "that project id does not exist"
+            }
+        return proj_doc_test
     else:
         return "fail"
 
