@@ -125,7 +125,7 @@ def get_proj_doc(project_id):
         if proj_doc_test['project_id'] == "":
             return {
                 "status": "fail",
-                "explaination": "that project id does not exist"
+                "explanation": "project id " + str(project_id) + " does not exist"
             }
         return proj_doc_test
     else:
