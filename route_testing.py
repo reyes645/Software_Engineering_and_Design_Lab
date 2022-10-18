@@ -18,9 +18,15 @@ def login():
             # actual_password = temp['password']
         # if request.form['password'] == actual_password:
             #return "pass"
+
+        uname = request.json.get('username')
+        pword = request.json.get('password')
+
         return {
             "status": "fail",
-            "user_document": someuserdocument
+            "user_document": someuserdocument,
+            "given username": uname,
+            "given password": pword
         }
     else:
         return render_template('login.html')
