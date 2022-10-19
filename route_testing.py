@@ -106,14 +106,22 @@ def project_add():
         return "fail"
 
 @app.route('/project/<int:project_id>', methods = ['POST'])
+# data from frontend: token, project_id in url
 def get_proj_doc(project_id):
     if request.method == 'POST':
         # debugging method
         clear2()
 
-        # will only work for project_id == 0 for now because thats the only id in the database
-        # if db.project_collection.count({'project_id': {"$in": project_id}}) != 1:
-        #     return "fail"
+        my_token = request.json.get('token')
+        #cursor = db.user_collection.find({'token': my_token})
+        #for temp in cursor:
+            #proj_list = temp['project_list']
+        #if project_id not in proj_list:
+            #return {
+                #"status": "fail",
+                #"token": my_token,
+                #"report": "this user does not have access to project " + str(project_id)
+            #}
 
         cursor = db.project_collection.find({'project_id': project_id})
         for temp in cursor:
@@ -125,9 +133,13 @@ def get_proj_doc(project_id):
         if proj_doc_test['project_id'] == "":
             return {
                 "status": "fail",
+                "token used": my_token,
                 "explanation": "project id " + str(project_id) + " does not exist"
             }
-        return proj_doc_test
+        return {
+            "token used": my_token,
+            "project doc": proj_doc_test
+        }
     else:
         return "fail"
 
