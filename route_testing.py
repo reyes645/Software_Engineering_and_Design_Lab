@@ -143,5 +143,26 @@ def get_proj_doc(project_id):
     else:
         return "fail"
 
+@app.route('/project/<int:project_id>/checkin', methods= ['POST'])
+# data from frontend: token, hw1, hw2, project id in url
+def checkin(project_id):
+    if request.method == 'POST':
+        # debugging method
+        clear2()
+
+        my_token = request.json.get('token')
+        cursor = db.user_collection.find({'token': my_token})
+        for temp in cursor:
+            proj_list = temp['project_list']
+        if project_id not in proj_list:
+            return {
+                "status": "fail",
+                "token": "my_token",
+                "report": "this user does not have access to project " + str(project_id)
+            }
+
+    else:
+        return "fail"
+
 
 app.run(debug = True, host='0.0.0.0', port=8080)
