@@ -176,33 +176,39 @@ def checkin(project_id):
             someuserdocument["user_id"] = temp['user_id']
             someuserdocument["password_id"] = temp['password_id']
             someuserdocument["token"] = temp['token']
-            someuserdocument["project_list"] = db.user_collection.distinct("project_list")
+            someuserdocument["project_list"] = temp['project_list']
 
+        # checking if token exists
         if someuserdocument['token'] == '':
             return {
                 "status": "fail",
                 "report": "token " + str(my_token) + " does not exist"
             }
+        # debug
+        #else:
+            #return {
+                #"status": "pass",
+                #"report": "token " + str(my_token) + " was found",
+                #"user_doc": someuserdocument
+            #}
 
+
+        # checking project list
+        # check this user's projects
+        proj_list = someuserdocument['project_list']
+        if project_id not in proj_list:
+            return {
+                "status": "fail",
+                "token used": my_token,
+                "report": "this user does not have access to project " + str(project_id)
+            }
         # debug
         else:
             return {
+                "token": my_token,
                 "status": "pass",
-                "report": "token " + str(my_token) + " was found",
-                "user_doc": someuserdocument
+                "report": "user with token " + str(my_token) + " has access to project " + str(project_id)
             }
-
-        #projectList = someuserdocument['project_list']
-        #return {
-            #"project_list": projectList
-        #}
-
-        #if project_id not in proj_list:
-            #return {
-                #"status": "fail",
-                #"token": "my_token",
-                #"report": "this user does not have access to project " + str(project_id)
-            #}
 
         #cursor = db.project_collection.find({'project_id': project_id})
         #for temp in cursor:
@@ -210,7 +216,7 @@ def checkin(project_id):
             #proj_doc_test["project_id"] = temp['project_id']
             #proj_doc_test["hw1"] = temp['hw1']
             #proj_doc_test["hw2"] = temp['hw2']
-            #proj_doc_test["collaborators"] = temp['collaborators']
+            #proj_doc_test["collaborators"] = db.project_collection.distinct['collaborators']
         #if proj_doc_test['project_id'] == "":
             #return {
                 #"status": "fail",
