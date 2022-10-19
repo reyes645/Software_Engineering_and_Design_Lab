@@ -3,6 +3,7 @@ from database import Database as db
 from project import Project
 from flask import Flask, request, jsonify, render_template
 # from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+import methods
 
 app = Flask(__name__)
 
@@ -149,34 +150,76 @@ def get_proj_doc(project_id):
 def checkin(project_id):
     if request.method == 'POST':
         # debugging method
+        clear()
         clear2()
 
+        hw1 = request.json.get('hw1')
+        hw2 = request.json.get('hw2')
+
         my_token = request.json.get('token')
+
+        # debug
+        # successfully gets token, hw1, hw2 when from json
+        #return {
+            #"token": my_token,
+            #"hw1": hw1,
+            #"hw2": hw2,
+            #"project id": project_id
+        #}
+
         cursor = db.user_collection.find({'token': my_token})
+
+        # successfully retrieves information using token
         for temp in cursor:
-            proj_list = temp['project_list']
-        if project_id not in proj_list:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = db.user_collection.distinct("project_list")
+
+        if someuserdocument['token'] == '':
             return {
                 "status": "fail",
-                "token": "my_token",
-                "report": "this user does not have access to project " + str(project_id)
+                "report": "token " + str(my_token) + " does not exist"
             }
 
-        cursor = db.project_collection.find({'project_id': project_id})
-        for temp in cursor:
-            proj_doc_test["project_name"] = temp['project_name']
-            proj_doc_test["project_id"] = temp['project_id']
-            proj_doc_test["hw1"] = temp['hw1']
-            proj_doc_test["hw2"] = temp['hw2']
-            proj_doc_test["collaborators"] = temp['collaborators']
-        if proj_doc_test['project_id'] == "":
+        # debug
+        else:
             return {
-                "status": "fail",
-                "token used": my_token,
-                "explanation": "project id " + str(project_id) + " does not exist"
+                "status": "pass",
+                "report": "token " + str(my_token) + " was found",
+                "user_doc": someuserdocument
             }
+
+        #projectList = someuserdocument['project_list']
+        #return {
+            #"project_list": projectList
+        #}
+
+        #if project_id not in proj_list:
+            #return {
+                #"status": "fail",
+                #"token": "my_token",
+                #"report": "this user does not have access to project " + str(project_id)
+            #}
+
+        #cursor = db.project_collection.find({'project_id': project_id})
+        #for temp in cursor:
+            #proj_doc_test["project_name"] = temp['project_name']
+            #proj_doc_test["project_id"] = temp['project_id']
+            #proj_doc_test["hw1"] = temp['hw1']
+            #proj_doc_test["hw2"] = temp['hw2']
+            #proj_doc_test["collaborators"] = temp['collaborators']
+        #if proj_doc_test['project_id'] == "":
+            #return {
+                #"status": "fail",
+                #"token used": my_token,
+                #"explanation": "project id " + str(project_id) + " does not exist"
+            #}
 
         # create methods.py for now to do checkin and checkout
+        #methods.project_checkin(project_id, hw1, hw2)
 
 
     else:
