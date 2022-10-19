@@ -145,6 +145,7 @@ def get_proj_doc(project_id):
 
 @app.route('/project/<int:project_id>/checkin', methods= ['POST'])
 # data from frontend: token, hw1, hw2, project id in url
+# checkin means you are returning data
 def checkin(project_id):
     if request.method == 'POST':
         # debugging method
@@ -160,6 +161,23 @@ def checkin(project_id):
                 "token": "my_token",
                 "report": "this user does not have access to project " + str(project_id)
             }
+
+        cursor = db.project_collection.find({'project_id': project_id})
+        for temp in cursor:
+            proj_doc_test["project_name"] = temp['project_name']
+            proj_doc_test["project_id"] = temp['project_id']
+            proj_doc_test["hw1"] = temp['hw1']
+            proj_doc_test["hw2"] = temp['hw2']
+            proj_doc_test["collaborators"] = temp['collaborators']
+        if proj_doc_test['project_id'] == "":
+            return {
+                "status": "fail",
+                "token used": my_token,
+                "explanation": "project id " + str(project_id) + " does not exist"
+            }
+
+        # create methods.py for now to do checkin and checkout
+
 
     else:
         return "fail"
