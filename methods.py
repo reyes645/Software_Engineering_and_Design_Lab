@@ -3,7 +3,8 @@
 from database import Database as db
 
 def hardware_checkin(one, two):
-    cursor = db.hardware_collection.findone()
+    # successfully edits mongodb database
+    cursor = db.hardware_collection.find({'maxHW1': {"$exists": "true"}})
     for temp in cursor:
         max1 = temp['maxHW1']
         max2 = temp['maxHW2']

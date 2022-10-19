@@ -25,6 +25,13 @@ proj_doc_test = {
     "collaborators": []
 }
 
+hardware_doc_test = {
+    "maxHW1": 0,
+    "maxHW2": 0,
+    "availHW1": 0,
+    "availHW2": 0
+}
+
 def clear():
     someuserdocument["username"] = ""
     someuserdocument["password"] = ""
@@ -39,6 +46,12 @@ def clear2():
     proj_doc_test["hw1"] = ""
     proj_doc_test["hw2"] = ""
     proj_doc_test["collaborators"] = []
+
+def clear3():
+    hardware_doc_test["maxHW1"] = 0
+    hardware_doc_test["maxHW2"] = 0
+    hardware_doc_test["availHW1"] = 0
+    hardware_doc_test["availHW2"] = 0
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -223,15 +236,38 @@ def checkin(project_id):
                 "token used": my_token,
                 "explanation": "project id " + str(project_id) + " does not exist"
             }
-        else:
-            return {
-                "status": "pass",
-                "token used": my_token,
-                "project doc": proj_doc_test
-            }
+        # debug
+        #else:
+            #return {
+                #"status": "pass",
+                #"token used": my_token,
+                #"project doc": proj_doc_test
+            #}
 
         # create methods.py for now to do checkin and checkout
-        #methods.project_checkin(project_id, hw1, hw2)
+        cursor = db.hardware_collection.find({'maxHW1': {"$exists": "true"}})
+        for temp in cursor:
+            hardware_doc_test['maxHW1'] = temp['maxHW1']
+            hardware_doc_test['maxHW2'] = temp['maxHW2']
+            hardware_doc_test['availHW1'] = temp['availHW1']
+            hardware_doc_test['availHW2'] = temp['availHW2']
+
+        #yield {
+            #"hardware doc": hardware_doc_test
+        #}
+
+        methods.hardware_checkin(10, 10)
+
+        cursor = db.hardware_collection.find({'maxHW1': {"$exists": "true"}})
+        for temp in cursor:
+            hardware_doc_test['maxHW1'] = temp['maxHW1']
+            hardware_doc_test['maxHW2'] = temp['maxHW2']
+            hardware_doc_test['availHW1'] = temp['availHW1']
+            hardware_doc_test['availHW2'] = temp['availHW2']
+
+        return {
+            "hardware doc": hardware_doc_test
+        }
 
 
     else:
