@@ -67,12 +67,22 @@ def login():
         uname = request.json.get('username')
         pword = request.json.get('password')
 
-        someuserdocument["username"] = uname
-        someuserdocument["password"] = pword
+        cursor = db.user_collection.find({'username': uname})
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+        if someuserdocument['username'] == '':
+            return "user " + str(someuserdocument['username']) + " does not exist"
+        if someuserdocument['password'] != pword:
+            return "incorrect password for user " + str(someuserdocument['username'])
 
         return {
             "pass/fail": "pass",
-            "status": "trying to login with username " + uname + " and password " + pword,
+            "status": "successful login with username " + uname + " and password " + pword,
             "user_document": someuserdocument
         }
     else:
