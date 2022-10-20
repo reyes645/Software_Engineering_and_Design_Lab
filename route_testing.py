@@ -530,6 +530,66 @@ def get_user_projects():
 
         return project_doc_list
 
+    else:
+        return "fail"
+
+@app.route('/user/add_project', methods= ['POST'])
+# receive token and project name from frontend
+def create_project():
+    if request.method == 'POST':
+        clear()
+        clear2()
+        clear3()
+
+        my_token = request.json.get('token')
+        pname = request.json.get('project_name')
+
+        cursor = db.user_collection.find({'token': my_token})
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+
+        if someuserdocument['token'] == '':
+            return {
+                "status": "fail",
+                "report": "token " + str(my_token) + " does not exist"
+            }
+
+        project_id = 0
+
+        cursor = db.project_collection.find({'project_id': project_id})
+        ids = db.project_collection.distinct('project_id')
+
+        # debug
+        #for id in ids:
+            #print(id)
+        #return ids
+
+        while project_id in ids:
+            project_id = project_id + 1
+
+        # debug
+        #return "create id of " + str(project_id)
+
+        new_project = {
+            "project_name": pname,
+            "project_id": project_id,
+            "hw1": "",
+            "hw2": "",
+            "collaborators": []
+        }
+        new_project['collaborators'].append(someuserdocument['username'])
+        someuserdocument['project_list'].append(project_id)
+        plist = someuserdocument['project_list']
+
+        x = db.project_collection.insert_one(new_project)
+        db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": plist}})
+
+        return "success"
 
     else:
         return "fail"
