@@ -102,12 +102,35 @@ def signup():
         uname = request.json.get('username')
         pword = request.json.get('password')
 
-        someuserdocument["username"] = uname
-        someuserdocument["password"] = pword
+        cursor = db.user_collection.find({'username': uname})
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+
+        if someuserdocument['username'] != '':
+            return {
+                "pass/fail": "fail",
+                "report": "username " + uname + " already exists"
+            }
+
+        newuser = {
+            "username": uname,
+            "password": pword,
+            "user_id": "",
+            "password_id": "",
+            "token": "",
+            "project_list": []
+        }
+
+        x = db.user_collection.insert_one(newuser)
 
         return {
             "pass/fail": "pass",
-            "status": "trying to signup with username " + uname + " and password " + pword,
+            "status": "successful signup with username " + uname + " and password " + pword,
         }
     else:
         return render_template("signup.html")
