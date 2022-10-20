@@ -589,7 +589,65 @@ def create_project():
         x = db.project_collection.insert_one(new_project)
         db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": plist}})
 
-        return "success"
+        return "added project " + str(project_id) + " with name " + pname + " from user " + someuserdocument['username']
+
+    else:
+        return "fail"
+
+@app.route('/user/join_project', methods= ['POST'])
+# receive token and project id from frontend
+def join_project():
+    if request.method == 'POST':
+        clear()
+        clear2()
+        clear3()
+
+        my_token = request.json.get('token')
+        project_id = request.json.get('project_id')
+
+        cursor = db.user_collection.find({'token': my_token})
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+
+        if someuserdocument['token'] == '':
+            return {
+                "status": "fail",
+                "report": "token " + str(my_token) + " does not exist"
+            }
+
+        cursor = db.project_collection.find({'project_id': project_id})
+        for temp in cursor:
+            proj_doc_test["project_name"] = temp['project_name']
+            proj_doc_test["project_id"] = temp['project_id']
+            proj_doc_test["hw1"] = temp['hw1']
+            proj_doc_test["hw2"] = temp['hw2']
+            proj_doc_test["collaborators"] = temp['collaborators']
+        if proj_doc_test['project_id'] == "":
+            return {
+                "status": "fail",
+                "token used": my_token,
+                "explanation": "project id " + str(project_id) + " does not exist"
+            }
+
+        project_id_list = someuserdocument['project_list']
+        collaborator_list = proj_doc_test['collaborators']
+        username = someuserdocument['username']
+
+        if project_id in project_id_list:
+            return str(someuserdocument['username']) + " is already a collaborator of project " + str(project_id)
+
+        project_id_list.append(project_id)
+        collaborator_list.append(username)
+
+        db.project_collection.update_one({"project_id": project_id}, {"$set": {"collaborators": collaborator_list}})
+        db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": project_id_list}})
+
+        return "added user " + str(username) + " to project " + str(project_id)
 
     else:
         return "fail"
