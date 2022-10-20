@@ -4,6 +4,7 @@ from project import Project
 from flask import Flask, request, jsonify, render_template
 # from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 import methods
+import copy
 
 app = Flask(__name__)
 
@@ -472,6 +473,66 @@ def get_user():
     else:
         return "fail"
 
+@app.route('/user/project_documents', methods= ['POST'])
+# receive token from frontend
+def get_user_projects():
+    if request.method == 'POST':
+        clear()
+        clear2()
+        clear3()
+
+        my_token = request.json.get('token')
+
+        cursor = db.user_collection.find({'token': my_token})
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+
+        if someuserdocument['token'] == '':
+            return {
+                "status": "fail",
+                "report": "token " + str(my_token) + " does not exist"
+            }
+
+        project_id_list = someuserdocument['project_list']
+
+        # debug
+        #return {
+            #"project list": project_id_list
+        #}
+
+        project_doc_list = []
+        for project_id in project_id_list:
+            clear2()
+
+            cursor = db.project_collection.find({'project_id': project_id})
+            for temp in cursor:
+                proj_doc_test["project_name"] = temp['project_name']
+                proj_doc_test["project_id"] = temp['project_id']
+                proj_doc_test["hw1"] = temp['hw1']
+                proj_doc_test["hw2"] = temp['hw2']
+                proj_doc_test["collaborators"] = temp['collaborators']
+
+            # uncomment this is it is possible to have projects listed that do not exist
+            #if proj_doc_test['project_id'] == '':
+                #continue
+
+            tempdoc = copy.deepcopy(proj_doc_test)
+            project_doc_list.append(tempdoc)
+
+        #for item in project_doc_list:
+            #print(item)
+        #print(project_doc_list)
+
+        return project_doc_list
+
+
+    else:
+        return "fail"
 
 
 app.run(debug = True, host='0.0.0.0', port=8080)
