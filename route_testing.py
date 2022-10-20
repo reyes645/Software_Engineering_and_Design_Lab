@@ -61,6 +61,8 @@ def login():
 
         # debugging method
         clear()
+        clear2()
+        clear3()
 
         uname = request.json.get('username')
         pword = request.json.get('password')
@@ -84,6 +86,8 @@ def signup():
 
         # debugging method
         clear()
+        clear2()
+        clear3()
 
         uname = request.json.get('username')
         pword = request.json.get('password')
@@ -124,7 +128,9 @@ def project_add():
 def get_proj_doc(project_id):
     if request.method == 'POST':
         # debugging method
+        clear()
         clear2()
+        clear3()
 
         my_token = request.json.get('token')
         #cursor = db.user_collection.find({'token': my_token})
@@ -400,6 +406,39 @@ def checkout(project_id):
 
     else:
         return "fail"
+
+@app.route('/user/', methods= ['POST'])
+def get_user():
+    # receive a token from frontend, return user doc
+    if request.method == 'POST':
+        clear()
+        clear2()
+        clear3()
+
+        my_token = request.json.get('token')
+
+        cursor = db.user_collection.find({'token': my_token})
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+
+        if someuserdocument['token'] == '':
+            return {
+                "status": "fail",
+                "report": "token " + str(my_token) + " does not exist"
+            }
+
+        return {
+            "user doc": someuserdocument
+        }
+
+    else:
+        return "fail"
+
 
 
 app.run(debug = True, host='0.0.0.0', port=8080)
