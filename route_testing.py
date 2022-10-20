@@ -165,6 +165,7 @@ def checkin(project_id):
         # debugging method
         clear()
         clear2()
+        clear3()
 
         hw1 = request.json.get('hw1')
         hw2 = request.json.get('hw2')
@@ -245,18 +246,9 @@ def checkin(project_id):
             #}
 
         # create methods.py for now to do checkin and checkout
-        cursor = db.hardware_collection.find({'maxHW1': {"$exists": "true"}})
-        for temp in cursor:
-            hardware_doc_test['maxHW1'] = temp['maxHW1']
-            hardware_doc_test['maxHW2'] = temp['maxHW2']
-            hardware_doc_test['availHW1'] = temp['availHW1']
-            hardware_doc_test['availHW2'] = temp['availHW2']
 
-        #yield {
-            #"hardware doc": hardware_doc_test
-        #}
-
-        methods.hardware_checkin(10, 10)
+        #methods.hardware_checkin(hw1, hw2)
+        methods.project_checkin(project_id, hw1, hw2)
 
         cursor = db.hardware_collection.find({'maxHW1': {"$exists": "true"}})
         for temp in cursor:
@@ -264,11 +256,130 @@ def checkin(project_id):
             hardware_doc_test['maxHW2'] = temp['maxHW2']
             hardware_doc_test['availHW1'] = temp['availHW1']
             hardware_doc_test['availHW2'] = temp['availHW2']
+
+        cursor = db.project_collection.find({'project_id': project_id})
+        for temp in cursor:
+            proj_doc_test["project_name"] = temp['project_name']
+            proj_doc_test["project_id"] = temp['project_id']
+            proj_doc_test["hw1"] = temp['hw1']
+            proj_doc_test["hw2"] = temp['hw2']
+            proj_doc_test["collaborators"] = temp['collaborators']
 
         return {
-            "hardware doc": hardware_doc_test
+            "hardware doc": hardware_doc_test,
+            "project doc": proj_doc_test
         }
 
+
+    else:
+        return "fail"
+
+@app.route('/project/<int:project_id>/checkout', methods= ['POST'])
+def checkout(project_id):
+    if request.method == 'POST':
+        # debugging method
+        clear()
+        clear2()
+        clear3()
+
+        hw1 = request.json.get('hw1')
+        hw2 = request.json.get('hw2')
+
+        my_token = request.json.get('token')
+
+        # debug
+        # successfully gets token, hw1, hw2 when from json
+        #return {
+            #"token": my_token,
+            #"hw1": hw1,
+            #"hw2": hw2,
+            #"project id": project_id
+        #}
+
+        cursor = db.user_collection.find({'token': my_token})
+
+        # successfully retrieves information using token
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+
+        # checking if token exists
+        if someuserdocument['token'] == '':
+            return {
+                "status": "fail",
+                "report": "token " + str(my_token) + " does not exist"
+            }
+        # debug
+        #else:
+            #return {
+                #"status": "pass",
+                #"report": "token " + str(my_token) + " was found",
+                #"user_doc": someuserdocument
+            #}
+
+        # checking project list
+        # check this user's projects
+        proj_list = someuserdocument['project_list']
+        if project_id not in proj_list:
+            return {
+                "status": "fail",
+                "token used": my_token,
+                "report": "this user does not have access to project " + str(project_id)
+            }
+        # debug
+        #else:
+            #return {
+                #"token": my_token,
+                #"status": "pass",
+                #"report": "user with token " + str(my_token) + " has access to project " + str(project_id)
+            #}
+
+        cursor = db.project_collection.find({'project_id': project_id})
+        for temp in cursor:
+            proj_doc_test["project_name"] = temp['project_name']
+            proj_doc_test["project_id"] = temp['project_id']
+            proj_doc_test["hw1"] = temp['hw1']
+            proj_doc_test["hw2"] = temp['hw2']
+            proj_doc_test["collaborators"] = temp['collaborators']
+        if proj_doc_test['project_id'] == "":
+            return {
+                "status": "fail",
+                "token used": my_token,
+                "explanation": "project id " + str(project_id) + " does not exist"
+            }
+        # debug
+        #else:
+            #return {
+                #"status": "pass",
+                #"token used": my_token,
+                #"project doc": proj_doc_test
+            #}
+
+        methods.project_checkout(project_id, hw1, hw2)
+
+        cursor = db.hardware_collection.find({'maxHW1': {"$exists": "true"}})
+        for temp in cursor:
+            hardware_doc_test['maxHW1'] = temp['maxHW1']
+            hardware_doc_test['maxHW2'] = temp['maxHW2']
+            hardware_doc_test['availHW1'] = temp['availHW1']
+            hardware_doc_test['availHW2'] = temp['availHW2']
+
+        cursor = db.project_collection.find({'project_id': project_id})
+        for temp in cursor:
+            proj_doc_test["project_name"] = temp['project_name']
+            proj_doc_test["project_id"] = temp['project_id']
+            proj_doc_test["hw1"] = temp['hw1']
+            proj_doc_test["hw2"] = temp['hw2']
+            proj_doc_test["collaborators"] = temp['collaborators']
+
+        return {
+            "hardware doc": hardware_doc_test,
+            "project doc": proj_doc_test
+        }
 
     else:
         return "fail"
