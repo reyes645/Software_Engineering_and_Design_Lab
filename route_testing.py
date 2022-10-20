@@ -265,9 +265,18 @@ def checkin(project_id):
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
 
+        if methods.status_list:
+            if -3 in methods.status_list:
+                if -4 in methods.status_list:
+                    return "not enough HW1 and HW2"
+                return "not enough HW1"
+            if -4 in methods.status_list:
+                return "not enough HW2"
+
         return {
             "hardware doc": hardware_doc_test,
-            "project doc": proj_doc_test
+            "project doc": proj_doc_test,
+            "status list": methods.status_list
         }
 
 
@@ -375,6 +384,14 @@ def checkout(project_id):
             proj_doc_test["hw1"] = temp['hw1']
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
+
+        if methods.status_list:
+            if -1 in methods.status_list:
+                if -2 in methods.status_list:
+                    return "not enough available HW1 and HW2"
+                return "not enough available HW1"
+            if -2 in methods.status_list:
+                return "not enough available HW2"
 
         return {
             "hardware doc": hardware_doc_test,
