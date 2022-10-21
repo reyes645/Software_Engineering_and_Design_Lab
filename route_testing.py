@@ -587,8 +587,8 @@ def create_project():
         new_project = {
             "project_name": pname,
             "project_id": project_id,
-            "hw1": "",
-            "hw2": "",
+            "hw1": 0,
+            "hw2": 0,
             "collaborators": []
         }
         new_project['collaborators'].append(someuserdocument['username'])
