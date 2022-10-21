@@ -167,15 +167,23 @@ def get_proj_doc(project_id):
         clear3()
 
         my_token = request.json.get('token')
-        #cursor = db.user_collection.find({'token': my_token})
-        #for temp in cursor:
-            #proj_list = temp['project_list']
-        #if project_id not in proj_list:
-            #return {
-                #"status": "fail",
-                #"token": my_token,
-                #"report": "this user does not have access to project " + str(project_id)
-            #}
+
+        cursor = db.user_collection.find({'token': my_token})
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+
+        proj_list = someuserdocument['project_list']
+        if project_id not in proj_list:
+            return {
+                "status": "fail",
+                "token used": my_token,
+                "report": "this user does not have access to project " + str(project_id)
+            }
 
         cursor = db.project_collection.find({'project_id': project_id})
         for temp in cursor:
@@ -190,6 +198,7 @@ def get_proj_doc(project_id):
                 "token used": my_token,
                 "explanation": "project id " + str(project_id) + " does not exist"
             }
+
         return {
             "token used": my_token,
             "project doc": proj_doc_test
