@@ -77,13 +77,19 @@ def login():
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
         if someuserdocument['username'] == '':
-            return "user " + str(someuserdocument['username']) + " does not exist"
+            return {
+                "status": "fail",
+                "report": "user " + str(someuserdocument['username']) + " does not exist"
+            }
         if someuserdocument['password'] != pword:
-            return "incorrect password for user " + str(someuserdocument['username'])
+            return {
+                "status": "fail",
+                "report": "incorrect password for user " + str(someuserdocument['username'])
+            }
 
         return {
-            "pass/fail": "pass",
-            "status": "successful login with username " + uname + " and password " + pword,
+            "status": "pass",
+            "report": "successful login with username " + uname + " and password " + pword,
             "user_document": someuserdocument
         }
     else:
@@ -114,7 +120,7 @@ def signup():
 
         if someuserdocument['username'] != '':
             return {
-                "pass/fail": "fail",
+                "status": "fail",
                 "report": "username " + uname + " already exists"
             }
 
@@ -130,8 +136,8 @@ def signup():
         x = db.user_collection.insert_one(newuser)
 
         return {
-            "pass/fail": "pass",
-            "status": "successful signup with username " + uname + " and password " + pword,
+            "status": "pass",
+            "report": "successful signup with username " + uname + " and password " + pword,
         }
     else:
         return render_template("signup.html")
@@ -194,7 +200,7 @@ def get_proj_doc(project_id):
             return {
                 "status": "fail",
                 "token used": my_token,
-                "explanation": "project id " + str(project_id) + " does not exist"
+                "report": "project id " + str(project_id) + " does not exist"
             }
 
         cursor = db.user_collection.find({'token': my_token})
@@ -229,6 +235,7 @@ def get_proj_doc(project_id):
             #}
 
         return {
+            "status": "pass",
             "token used": my_token,
             "project doc": proj_doc_test
         }
@@ -359,15 +366,24 @@ def checkin(project_id):
         if methods.status_list:
             if -3 in methods.status_list:
                 if -4 in methods.status_list:
-                    return "not enough HW1 and HW2"
-                return "not enough HW1"
+                    return {
+                        "status": "fail",
+                        "report": "not enough HW1 and HW2"
+                    }
+                return {
+                    "status": "fail",
+                    "report": "not enough HW1"
+                }
             if -4 in methods.status_list:
-                return "not enough HW2"
+                return {
+                    "status": "fail",
+                    "report": "not enough HW2"
+                }
 
         return {
+            "status": "pass",
             "hardware doc": hardware_doc_test,
-            "project doc": proj_doc_test,
-            "status list": methods.status_list
+            "project doc": proj_doc_test
         }
 
 
@@ -421,6 +437,7 @@ def checkout(project_id):
                 #"user_doc": someuserdocument
             #}
 
+        cursor = db.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
             proj_doc_test["project_id"] = temp['project_id']
@@ -492,12 +509,22 @@ def checkout(project_id):
         if methods.status_list:
             if -1 in methods.status_list:
                 if -2 in methods.status_list:
-                    return "not enough available HW1 and HW2"
-                return "not enough available HW1"
+                    return {
+                        "status": "fail",
+                        "report": "not enough available HW1 and HW2"
+                    }
+                return {
+                    "status": "fail",
+                    "report": "not enough available HW1"
+                }
             if -2 in methods.status_list:
-                return "not enough available HW2"
+                return {
+                    "status": "fail",
+                    "report": "not enough available HW2"
+                }
 
         return {
+            "status": "pass",
             "hardware doc": hardware_doc_test,
             "project doc": proj_doc_test
         }
@@ -531,6 +558,7 @@ def get_user():
             }
 
         return {
+            "status": "fail",
             "user doc": someuserdocument
         }
 
@@ -592,7 +620,10 @@ def get_user_projects():
             #print(item)
         #print(project_doc_list)
 
-        return project_doc_list
+        return {
+            "status": "pass",
+            "project list": project_doc_list
+        }
 
     else:
         return "fail"
@@ -607,6 +638,12 @@ def create_project():
 
         my_token = request.json.get('token')
         pname = request.json.get('project_name')
+
+        if pname == None:
+            return {
+                "status": "fail",
+                "report": "no name detected"
+            }
 
         cursor = db.user_collection.find({'token': my_token})
         for temp in cursor:
@@ -653,7 +690,10 @@ def create_project():
         x = db.project_collection.insert_one(new_project)
         db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": plist}})
 
-        return "added project " + str(project_id) + " with name " + pname + " from user " + someuserdocument['username']
+        return {
+            "status": "pass",
+            "report": "added project " + str(project_id) + " with name " + pname + " from user " + someuserdocument['username']
+        }
 
     else:
         return "fail"
@@ -703,7 +743,10 @@ def join_project():
         username = someuserdocument['username']
 
         if project_id in project_id_list:
-            return str(someuserdocument['username']) + " is already a collaborator of project " + str(project_id)
+            return {
+                "status": "fail",
+                "report": str(someuserdocument['username']) + " is already a collaborator of project " + str(project_id)
+            }
 
         project_id_list.append(project_id)
         collaborator_list.append(username)
@@ -711,7 +754,10 @@ def join_project():
         db.project_collection.update_one({"project_id": project_id}, {"$set": {"collaborators": collaborator_list}})
         db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": project_id_list}})
 
-        return "added user " + str(username) + " to project " + str(project_id)
+        return {
+            "status": "pass",
+            "report": "added user " + str(username) + " to project " + str(project_id)
+        }
 
     else:
         return "fail"
