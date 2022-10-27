@@ -168,6 +168,20 @@ def get_proj_doc(project_id):
 
         my_token = request.json.get('token')
 
+        cursor = db.project_collection.find({'project_id': project_id})
+        for temp in cursor:
+            proj_doc_test["project_name"] = temp['project_name']
+            proj_doc_test["project_id"] = temp['project_id']
+            proj_doc_test["hw1"] = temp['hw1']
+            proj_doc_test["hw2"] = temp['hw2']
+            proj_doc_test["collaborators"] = temp['collaborators']
+        if proj_doc_test['project_id'] == "":
+            return {
+                "status": "fail",
+                "token used": my_token,
+                "explanation": "project id " + str(project_id) + " does not exist"
+            }
+
         cursor = db.user_collection.find({'token': my_token})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
@@ -185,19 +199,19 @@ def get_proj_doc(project_id):
                 "report": "this user does not have access to project " + str(project_id)
             }
 
-        cursor = db.project_collection.find({'project_id': project_id})
-        for temp in cursor:
-            proj_doc_test["project_name"] = temp['project_name']
-            proj_doc_test["project_id"] = temp['project_id']
-            proj_doc_test["hw1"] = temp['hw1']
-            proj_doc_test["hw2"] = temp['hw2']
-            proj_doc_test["collaborators"] = temp['collaborators']
-        if proj_doc_test['project_id'] == "":
-            return {
-                "status": "fail",
-                "token used": my_token,
-                "explanation": "project id " + str(project_id) + " does not exist"
-            }
+        #cursor = db.project_collection.find({'project_id': project_id})
+        #for temp in cursor:
+            #proj_doc_test["project_name"] = temp['project_name']
+            #proj_doc_test["project_id"] = temp['project_id']
+            #proj_doc_test["hw1"] = temp['hw1']
+            #proj_doc_test["hw2"] = temp['hw2']
+            #proj_doc_test["collaborators"] = temp['collaborators']
+        #if proj_doc_test['project_id'] == "":
+            #return {
+                #"status": "fail",
+                #"token used": my_token,
+                #"explanation": "project id " + str(project_id) + " does not exist"
+            #}
 
         return {
             "token used": my_token,
