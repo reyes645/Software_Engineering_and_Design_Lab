@@ -302,7 +302,7 @@ def checkin(project_id):
             return {
                 "status": "fail",
                 "token used": my_token,
-                "explanation": "project id " + str(project_id) + " does not exist"
+                "report": "project id " + str(project_id) + " does not exist"
             }
 
         # checking project list
@@ -448,7 +448,7 @@ def checkout(project_id):
             return {
                 "status": "fail",
                 "token used": my_token,
-                "explanation": "project id " + str(project_id) + " does not exist"
+                "report": "project id " + str(project_id) + " does not exist"
             }
 
         # checking project list
@@ -558,7 +558,7 @@ def get_user():
             }
 
         return {
-            "status": "fail",
+            "status": "pass",
             "user doc": someuserdocument
         }
 
@@ -735,7 +735,7 @@ def join_project():
             return {
                 "status": "fail",
                 "token used": my_token,
-                "explanation": "project id " + str(project_id) + " does not exist"
+                "report": "project id " + str(project_id) + " does not exist"
             }
 
         project_id_list = someuserdocument['project_list']
