@@ -123,7 +123,7 @@ def signup():
             "password": pword,
             "user_id": "",
             "password_id": "",
-            "token": "",
+            "token": uname,
             "project_list": []
         }
 
