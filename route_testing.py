@@ -168,6 +168,21 @@ def get_proj_doc(project_id):
 
         my_token = request.json.get('token')
 
+        cursor = db.user_collection.find({'token': my_token})
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+
+        if someuserdocument['token'] == '':
+            return {
+                "status": "fail",
+                "report": "token " + str(my_token) + " does not exist"
+            }
+
         cursor = db.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
@@ -269,6 +284,19 @@ def checkin(project_id):
                 #"user_doc": someuserdocument
             #}
 
+        cursor = db.project_collection.find({'project_id': project_id})
+        for temp in cursor:
+            proj_doc_test["project_name"] = temp['project_name']
+            proj_doc_test["project_id"] = temp['project_id']
+            proj_doc_test["hw1"] = temp['hw1']
+            proj_doc_test["hw2"] = temp['hw2']
+            proj_doc_test["collaborators"] = temp['collaborators']
+        if proj_doc_test['project_id'] == "":
+            return {
+                "status": "fail",
+                "token used": my_token,
+                "explanation": "project id " + str(project_id) + " does not exist"
+            }
 
         # checking project list
         # check this user's projects
@@ -287,19 +315,19 @@ def checkin(project_id):
                 #"report": "user with token " + str(my_token) + " has access to project " + str(project_id)
             #}
 
-        cursor = db.project_collection.find({'project_id': project_id})
-        for temp in cursor:
-            proj_doc_test["project_name"] = temp['project_name']
-            proj_doc_test["project_id"] = temp['project_id']
-            proj_doc_test["hw1"] = temp['hw1']
-            proj_doc_test["hw2"] = temp['hw2']
-            proj_doc_test["collaborators"] = temp['collaborators']
-        if proj_doc_test['project_id'] == "":
-            return {
-                "status": "fail",
-                "token used": my_token,
-                "explanation": "project id " + str(project_id) + " does not exist"
-            }
+        #cursor = db.project_collection.find({'project_id': project_id})
+        #for temp in cursor:
+            #proj_doc_test["project_name"] = temp['project_name']
+            #proj_doc_test["project_id"] = temp['project_id']
+            #proj_doc_test["hw1"] = temp['hw1']
+            #proj_doc_test["hw2"] = temp['hw2']
+            #proj_doc_test["collaborators"] = temp['collaborators']
+        #if proj_doc_test['project_id'] == "":
+            #return {
+                #"status": "fail",
+                #"token used": my_token,
+                #"explanation": "project id " + str(project_id) + " does not exist"
+            #}
         # debug
         #else:
             #return {
@@ -393,6 +421,19 @@ def checkout(project_id):
                 #"user_doc": someuserdocument
             #}
 
+        for temp in cursor:
+            proj_doc_test["project_name"] = temp['project_name']
+            proj_doc_test["project_id"] = temp['project_id']
+            proj_doc_test["hw1"] = temp['hw1']
+            proj_doc_test["hw2"] = temp['hw2']
+            proj_doc_test["collaborators"] = temp['collaborators']
+        if proj_doc_test['project_id'] == "":
+            return {
+                "status": "fail",
+                "token used": my_token,
+                "explanation": "project id " + str(project_id) + " does not exist"
+            }
+
         # checking project list
         # check this user's projects
         proj_list = someuserdocument['project_list']
@@ -410,19 +451,19 @@ def checkout(project_id):
                 #"report": "user with token " + str(my_token) + " has access to project " + str(project_id)
             #}
 
-        cursor = db.project_collection.find({'project_id': project_id})
-        for temp in cursor:
-            proj_doc_test["project_name"] = temp['project_name']
-            proj_doc_test["project_id"] = temp['project_id']
-            proj_doc_test["hw1"] = temp['hw1']
-            proj_doc_test["hw2"] = temp['hw2']
-            proj_doc_test["collaborators"] = temp['collaborators']
-        if proj_doc_test['project_id'] == "":
-            return {
-                "status": "fail",
-                "token used": my_token,
-                "explanation": "project id " + str(project_id) + " does not exist"
-            }
+        #cursor = db.project_collection.find({'project_id': project_id})
+        #for temp in cursor:
+            #proj_doc_test["project_name"] = temp['project_name']
+            #proj_doc_test["project_id"] = temp['project_id']
+            #proj_doc_test["hw1"] = temp['hw1']
+            #proj_doc_test["hw2"] = temp['hw2']
+            #proj_doc_test["collaborators"] = temp['collaborators']
+        #if proj_doc_test['project_id'] == "":
+            #return {
+                #"status": "fail",
+                #"token used": my_token,
+                #"explanation": "project id " + str(project_id) + " does not exist"
+            #}
         # debug
         #else:
             #return {
