@@ -49,3 +49,7 @@ body {
     margin-left: 20px;
   }
   
+  .logout {
+    float: right;
+    background-color: red;
+  }

@@ -1,88 +1,97 @@
-import React from 'react';
-import ReactDOM from 'react-dom'
-import './index.css';
-import {Button, TextField} from '@mui/material';
+import React from "react";
+import ReactDOM from "react-dom"
+import "./index.css";
+import {Button, TextField} from "@mui/material";
+import * as ReactDOMClient from 'react-dom/client';
 
-class HWSET extends React.Component {
+class HWSET1 extends React.Component {
   render() {
-    return <div>HWSET {this.props.properties.name} {this.props.properties.usage}/{this.props.properties.capacity}</div>
+    return <div>HWSET {"hw1"} {this.props.properties}/{1000}</div>
+  }
+}
+
+class HWSET2 extends React.Component {
+  render() {
+    return <div>HWSET {"hw2"} {this.props.properties}/{1000}</div>
   }
 }
 
 class Project extends React.Component {
   render() {
+    let hw1 = this.props.properties.hw1;
+    let hw2 = this.props.properties.hw2;
+
     const handleCheck_in = async() =>{
       try{
-        const response = await fetch('http://3.16.154.17:8080/project/{project_id}/checkin', {
-          'method': 'POST',
-          'body': {
-            'token': '',
-            'hw1': '',
-            'hw2': ''
-          },
+        const response = await fetch("http://3.16.154.17:8080/project/0/checkin", {
+          "method": "POST",
+          "body": JSON.stringify({
+            "token": "accessToken",
+            "hw1": hw1,
+            "hw2": hw2
+          }),
         });
         
         if (!response.ok) {
           throw new Error(`Error! status: ${response.status}`);
         }
-
+    
         const result = await response.json();
-      } catch {
 
+        if (result.status === "fail") {
+          console.log(result.report);
+        } else{
+          hw1 = result.hardwaredoc[0];
+          hw2 = result.hardwaredoc[1];
+        }
+
+      } catch (err) {
+          console.log("Error: " + err)
       } finally {
-
+    
       }
     }
-
+    
     const handleCheck_out = async() =>{
       try{
-        const response = await fetch('http://3.16.154.17:8080/project/{project_id}/checkout', {
-          'method': 'POST',
-          'body': {
-            'token': '',
-            'hw1': '',
-            'hw2': ''
+        const response = await fetch("http://3.16.154.17:8080/project/{project_id}/checkout", {
+          "method": "POST",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
           },
+          "body": JSON.stringify({
+            "token": "user2Token",
+            "hw1": hw1,
+            "hw2": hw2,
+          }),
         });
         
         if (!response.ok) {
           throw new Error(`Error! status: ${response.status}`);
         }
-
+    
         const result = await response.json();
-      } catch {
 
-      } finally {
-
-      }
-    }
-    const handleJoin = async() =>{
-      try{
-        const response = await fetch('http://3.16.154.17:8080/user/join_project', {
-          'method': 'POST',
-          'body': {
-            'token': '',
-            'project_id': '',
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Error! status: ${response.status}`);
+        if (result.status === "fail") {
+          console.log(result.report);
+        } else{
+          hw1 = result.projectdoc.hw1;
+          hw2 = result.projectdoc.hw2;
         }
 
-        const result = await response.json();
-      } catch {
-
+      } catch (err){
+          console.log("Error: " + err)
       } finally {
-
+    
       }
     }
     return (
       <div>
         <hr />
         <div>NAME:  {this.props.properties.project_name}</div>
-        <div>USERS: {this.props.properties.users.toString()}</div>
-        <HWSET properties={this.props.properties.hwsets[0]} />
+        <div>COLLABORATORS: {this.props.properties.collaborators}</div>
+        <HWSET1 properties={hw1} />
         <TextField
           hiddenLabel
           id="filled-hidden-label-small"
@@ -91,98 +100,132 @@ class Project extends React.Component {
         />
         <Button variant="outlined" onClick={handleCheck_in}>Check In</Button>
         <Button variant="outlined" onClick={handleCheck_out}>Check out</Button>
-        <HWSET properties={this.props.properties.hwsets[1]} />
+        <HWSET2 properties={hw2} />
         <TextField
           hiddenLabel
           id="filled-hidden-label-small"
           variant="filled"
           size="small"
         />
-        <Button variant="outlined">Check In</Button>
-        <Button variant="outlined">Check out</Button><br />
+        <Button variant="outlined" onClick={handleCheck_in}>Check In</Button>
+        <Button variant="outlined" onClick={handleCheck_in}>Check out</Button><br />
         <Button variant="contained" onClick={()=>this.props.clickJoinLeaveButton()}>{this.props.properties.isJoined ? "LEAVE": "JOIN"}</Button>
         <hr />
       </div>
     );
+    
   }
 }
 
 class Projects extends React.Component {
   constructor(props) {
+    const token = "userToken"
+    let userdoc;
+    const get_userdoc = async() => {
+      try{
+        let response = fetch("http://3.16.154.17:8080/user", {
+          "method": "POST",
+          "headers": {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          "body": JSON.stringify({"token": token})
+        });
+          
+        if (!response.ok) {
+          throw new Error(`Error! status: ${response.status}`);
+        }
+      
+        let result = response.json();
+        userdoc = result;
+        console.log(userdoc);
+      } catch(err) {
+        console.log("Error " + err);
+      } finally {
+      
+      }
+    }
+    
+    get_userdoc();
+    let projects = [];
+    for (let i = 0; i < userdoc.project_list.length; i++) {
+      let project_id = userdoc.project_list[i];
+      let response = fetch("http://3.16.154.17:8080/project/" + {project_id}, {
+          "method": "POST",
+          "headers": {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          "body": JSON.stringify({"token": token})
+        });
+        let project_doc = response.json();
+      projects.push(<Project key={i} properties={project_doc}></Project>)
+    }
     super(props);
     this.state = {
-      projects: [
-        {
-          project_name: "Project 1",
-          users: ["a", "b"],
-          hwsets: [
-            {
-              name: "1",
-              usage: 50,
-              capacity: 100,
-            },
-            {
-              name: "2",
-              usage: 0,
-              capacity: 100,
-            }
-          ],
-          isJoined: false,
-        },
-        {
-          project_name: "Project 2",
-          users: ["c", "d"],
-          hwsets: [
-            {
-              name: "1",
-              usage: 50,
-              capacity: 100,
-            },
-            {
-              name: "2",
-              usage: 0,
-              capacity: 100,
-            }
-          ],
-          isJoined: true,
-        },
-        {
-          project_name: "Project 3",
-          users: ["e", "f"],
-          hwsets: [
-            {
-              name: "1",
-              usage: 0,
-              capacity: 100,
-            },
-            {
-              name: "2",
-              usage: 0,
-              capacity: 100,
-            }
-          ],
-          isJoined: false,
-        },
-      ]
+      projects_list: projects,
     }
   }
   render() {
     const projects = [];
-    for (let i = 0; i < this.state.projects.length; i++) {
+    for (let i = 0; i < this.state.projects_list.length; i++) {
         // note: we are adding a key prop here to allow react to uniquely identify each
         // element in this array. see: https://reactjs.org/docs/lists-and-keys.html
-        projects.push(<Project key={i} properties={this.state.projects[i]} clickJoinLeaveButton={()=>{var cpy = JSON.parse(JSON.stringify(this.state.projects)); cpy[i].isJoined = !cpy[i].isJoined; console.log(cpy); this.setState({projects: cpy})}} />);
+        projects.push(<Project key={i} properties={this.state.projects_list[i]} clickJoinLeaveButton={()=>{var cpy = JSON.parse(JSON.stringify(this.state.projects_list)); cpy[i].isJoined = !cpy[i].isJoined; console.log(cpy); this.setState({projects_list: cpy})}} />);
     }
     return (
       <div>
-        <p>Projects</p>
+        <p>Projects <Button variant="contained" className="logout"><strong>Logout</strong></Button></p>
         <div>{projects}</div>
+        <div><TextField
+          hiddenLabel
+          id="filled-hidden-label-small"
+          variant="filled"
+          size="small"
+        />
+        <Button variant="contained">Add Project</Button>
+        </div>
+        <div><TextField
+          hiddenLabel
+          id="filled-hidden-label-small"
+          variant="filled"
+          size="small"
+        />
+        <Button variant="contained">Join Project</Button>
+
+        </div>
       </div>
     );
   }
 }
 
-// ========================================
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+/*const handleJoin = async() =>{
+  try{
+    const response = await fetch("http://3.16.154.17:8080/user/join_project", {
+      "method": "POST",
+      headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+      "body": {
+        "token": "",
+        "project_id": "",
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+  } catch (err){
+      console.log("Error: " +err);
+  } finally {
+
+  }
+}
+*/
+// ========================================
+const root = ReactDOMClient.createRoot(document.getElementById("root"));
 root.render(<Projects />);
