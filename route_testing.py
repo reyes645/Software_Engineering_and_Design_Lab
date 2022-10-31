@@ -3,12 +3,12 @@ from database import Database as db
 from project import Project
 from flask import Flask, request, jsonify, render_template, make_response
 # from flask_jwt_extended import JWTManager, jwt_required, create_access_token
-#from flask_cors import CORS, c
+from flask_cors import CORS
 import methods
 import copy
 
 app = Flask(__name__)
-#CORS(app)
+CORS(app)
 
 someuserdocument = {
     "username": "",
@@ -763,17 +763,6 @@ def join_project():
 
     else:
         return "fail"
-
-def _build_cors_preflight_response():
-    response = make_response()
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add('Access-Control-Allow-Headers', "*")
-    response.headers.add('Access-Control-Allow-Methods', "*")
-    return response
-
-def _corsify_actual_response(response):
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    return response
 
 
 app.run(debug = True, host='0.0.0.0', port=8080)
