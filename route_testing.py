@@ -3,12 +3,12 @@ from database import Database as db
 from project import Project
 from flask import Flask, request, jsonify, render_template, make_response
 # from flask_jwt_extended import JWTManager, jwt_required, create_access_token
-from flask_cors import CORS
+#from flask_cors import CORS
 import methods
 import copy
 
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
 
 someuserdocument = {
     "username": "",
@@ -57,9 +57,11 @@ def clear3():
     hardware_doc_test["availHW2"] = 0
 
 
-@app.route('/login', methods=['POST', 'GET'])
+@app.route('/login', methods=['POST', 'GET', 'OPTIONS'])
 def login():
-    if request.method == 'POST':
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+    elif request.method == 'POST':
         # need to check if username and password match
 
         # debugging method
@@ -79,21 +81,23 @@ def login():
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
         if someuserdocument['username'] == '':
-            return {
+            response = {
                 "status": "fail",
                 "report": "user " + str(someuserdocument['username']) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
         if someuserdocument['password'] != pword:
-            return {
+            response = {
                 "status": "fail",
                 "report": "incorrect password for user " + str(someuserdocument['username'])
             }
-
-        return {
+            return _corsify_actual_response(jsonify(response))
+        response = {
             "status": "pass",
             "report": "successful login with username " + uname + " and password " + pword,
             "user_document": someuserdocument
         }
+        return _corsify_actual_response(jsonify(response))
     else:
         return render_template('login.html')
 
@@ -121,10 +125,11 @@ def signup():
             someuserdocument["project_list"] = temp['project_list']
 
         if someuserdocument['username'] != '':
-            return {
+            response = {
                 "status": "fail",
                 "report": "username " + uname + " already exists"
             }
+            return _corsify_actual_response(jsonify(response))
 
         newuser = {
             "username": uname,
@@ -137,10 +142,11 @@ def signup():
 
         x = db.user_collection.insert_one(newuser)
 
-        return {
+        response = {
             "status": "pass",
             "report": "successful signup with username " + uname + " and password " + pword,
         }
+        return _corsify_actual_response(jsonify(response))
     else:
         return render_template("signup.html")
 
@@ -186,10 +192,11 @@ def get_proj_doc(project_id):
             someuserdocument["project_list"] = temp['project_list']
 
         if someuserdocument['token'] == '':
-            return {
+            response = {
                 "status": "fail",
                 "report": "token " + str(my_token) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
 
         cursor = db.project_collection.find({'project_id': project_id})
         for temp in cursor:
@@ -199,11 +206,12 @@ def get_proj_doc(project_id):
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
         if proj_doc_test['project_id'] == "":
-            return {
+            response = {
                 "status": "fail",
-                "token used": my_token,
+                "token_used": my_token,
                 "report": "project id " + str(project_id) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
 
         cursor = db.user_collection.find({'token': my_token})
         for temp in cursor:
@@ -216,31 +224,19 @@ def get_proj_doc(project_id):
 
         proj_list = someuserdocument['project_list']
         if project_id not in proj_list:
-            return {
+            response = {
                 "status": "fail",
-                "token used": my_token,
+                "token_used": my_token,
                 "report": "this user does not have access to project " + str(project_id)
             }
+            return _corsify_actual_response(jsonify(response))
 
-        #cursor = db.project_collection.find({'project_id': project_id})
-        #for temp in cursor:
-            #proj_doc_test["project_name"] = temp['project_name']
-            #proj_doc_test["project_id"] = temp['project_id']
-            #proj_doc_test["hw1"] = temp['hw1']
-            #proj_doc_test["hw2"] = temp['hw2']
-            #proj_doc_test["collaborators"] = temp['collaborators']
-        #if proj_doc_test['project_id'] == "":
-            #return {
-                #"status": "fail",
-                #"token used": my_token,
-                #"explanation": "project id " + str(project_id) + " does not exist"
-            #}
-
-        return {
+        response = {
             "status": "pass",
-            "token used": my_token,
-            "project doc": proj_doc_test
+            "token_used": my_token,
+            "project_doc": proj_doc_test
         }
+        return _corsify_actual_response(jsonify(response))
     else:
         return "fail"
 
@@ -281,10 +277,11 @@ def checkin(project_id):
 
         # checking if token exists
         if someuserdocument['token'] == '':
-            return {
+            response = {
                 "status": "fail",
                 "report": "token " + str(my_token) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
         # debug
         #else:
             #return {
@@ -301,21 +298,23 @@ def checkin(project_id):
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
         if proj_doc_test['project_id'] == "":
-            return {
+            response = {
                 "status": "fail",
-                "token used": my_token,
+                "token_used": my_token,
                 "report": "project id " + str(project_id) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
 
         # checking project list
         # check this user's projects
         proj_list = someuserdocument['project_list']
         if project_id not in proj_list:
-            return {
+            response = {
                 "status": "fail",
-                "token used": my_token,
+                "token_used": my_token,
                 "report": "this user does not have access to project " + str(project_id)
             }
+            return _corsify_actual_response(jsonify(response))
         # debug
         #else:
             #return {
@@ -368,25 +367,29 @@ def checkin(project_id):
         if methods.status_list:
             if -3 in methods.status_list:
                 if -4 in methods.status_list:
-                    return {
+                    response = {
                         "status": "fail",
                         "report": "not enough HW1 and HW2"
                     }
-                return {
+                    return _corsify_actual_response(jsonify(response))
+                response = {
                     "status": "fail",
                     "report": "not enough HW1"
                 }
+                return _corsify_actual_response(jsonify(response))
             if -4 in methods.status_list:
-                return {
+                response = {
                     "status": "fail",
                     "report": "not enough HW2"
                 }
+                return _corsify_actual_response(jsonify(response))
 
-        return {
+        response = {
             "status": "pass",
-            "hardware doc": hardware_doc_test,
-            "project doc": proj_doc_test
+            "hardware_doc": hardware_doc_test,
+            "project_doc": proj_doc_test
         }
+        return _corsify_actual_response(jsonify(response))
 
 
     else:
@@ -427,10 +430,11 @@ def checkout(project_id):
 
         # checking if token exists
         if someuserdocument['token'] == '':
-            return {
+            response = {
                 "status": "fail",
                 "report": "token " + str(my_token) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
         # debug
         #else:
             #return {
@@ -447,21 +451,23 @@ def checkout(project_id):
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
         if proj_doc_test['project_id'] == "":
-            return {
+            response = {
                 "status": "fail",
                 "token used": my_token,
                 "report": "project id " + str(project_id) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
 
         # checking project list
         # check this user's projects
         proj_list = someuserdocument['project_list']
         if project_id not in proj_list:
-            return {
+            response = {
                 "status": "fail",
-                "token used": my_token,
+                "token_used": my_token,
                 "report": "this user does not have access to project " + str(project_id)
             }
+            return _corsify_actual_response(jsonify(response))
         # debug
         #else:
             #return {
@@ -511,25 +517,29 @@ def checkout(project_id):
         if methods.status_list:
             if -1 in methods.status_list:
                 if -2 in methods.status_list:
-                    return {
+                    response = {
                         "status": "fail",
                         "report": "not enough available HW1 and HW2"
                     }
-                return {
+                    return _corsify_actual_response(jsonify(response))
+                response = {
                     "status": "fail",
                     "report": "not enough available HW1"
                 }
+                return _corsify_actual_response(jsonify(response))
             if -2 in methods.status_list:
-                return {
+                response = {
                     "status": "fail",
                     "report": "not enough available HW2"
                 }
+                return _corsify_actual_response(jsonify(response))
 
-        return {
+        response = {
             "status": "pass",
-            "hardware doc": hardware_doc_test,
-            "project doc": proj_doc_test
+            "hardware_doc": hardware_doc_test,
+            "project_doc": proj_doc_test
         }
+        return _corsify_actual_response(jsonify(response))
 
     else:
         return "fail"
@@ -554,15 +564,17 @@ def get_user():
             someuserdocument["project_list"] = temp['project_list']
 
         if someuserdocument['token'] == '':
-            return {
+            response = {
                 "status": "fail",
                 "report": "token " + str(my_token) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
 
-        return {
+        response = {
             "status": "pass",
-            "user doc": someuserdocument
+            "user_doc": someuserdocument
         }
+        return _corsify_actual_response(jsonify(response))
 
     else:
         return "fail"
@@ -587,10 +599,11 @@ def get_user_projects():
             someuserdocument["project_list"] = temp['project_list']
 
         if someuserdocument['token'] == '':
-            return {
+            response = {
                 "status": "fail",
                 "report": "token " + str(my_token) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
 
         project_id_list = someuserdocument['project_list']
 
@@ -622,10 +635,11 @@ def get_user_projects():
             #print(item)
         #print(project_doc_list)
 
-        return {
+        response = {
             "status": "pass",
-            "project list": project_doc_list
+            "project_list": project_doc_list
         }
+        return _corsify_actual_response(jsonify(response))
 
     else:
         return "fail"
@@ -642,10 +656,11 @@ def create_project():
         pname = request.json.get('project_name')
 
         if pname == None:
-            return {
+            response = {
                 "status": "fail",
                 "report": "no name detected"
             }
+            return _corsify_actual_response(jsonify(response))
 
         cursor = db.user_collection.find({'token': my_token})
         for temp in cursor:
@@ -657,10 +672,11 @@ def create_project():
             someuserdocument["project_list"] = temp['project_list']
 
         if someuserdocument['token'] == '':
-            return {
+            response = {
                 "status": "fail",
                 "report": "token " + str(my_token) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
 
         project_id = 0
 
@@ -692,10 +708,11 @@ def create_project():
         x = db.project_collection.insert_one(new_project)
         db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": plist}})
 
-        return {
+        response = {
             "status": "pass",
             "report": "added project " + str(project_id) + " with name " + pname + " from user " + someuserdocument['username']
         }
+        return _corsify_actual_response(jsonify(response))
 
     else:
         return "fail"
@@ -721,10 +738,11 @@ def join_project():
             someuserdocument["project_list"] = temp['project_list']
 
         if someuserdocument['token'] == '':
-            return {
+            response = {
                 "status": "fail",
                 "report": "token " + str(my_token) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
 
         cursor = db.project_collection.find({'project_id': project_id})
         for temp in cursor:
@@ -734,21 +752,23 @@ def join_project():
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
         if proj_doc_test['project_id'] == "":
-            return {
+            response = {
                 "status": "fail",
-                "token used": my_token,
+                "token_used": my_token,
                 "report": "project id " + str(project_id) + " does not exist"
             }
+            return _corsify_actual_response(jsonify(response))
 
         project_id_list = someuserdocument['project_list']
         collaborator_list = proj_doc_test['collaborators']
         username = someuserdocument['username']
 
         if project_id in project_id_list:
-            return {
+            response = {
                 "status": "fail",
                 "report": str(someuserdocument['username']) + " is already a collaborator of project " + str(project_id)
             }
+            return _corsify_actual_response(jsonify(response))
 
         project_id_list.append(project_id)
         collaborator_list.append(username)
@@ -756,13 +776,24 @@ def join_project():
         db.project_collection.update_one({"project_id": project_id}, {"$set": {"collaborators": collaborator_list}})
         db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": project_id_list}})
 
-        return {
+        response = {
             "status": "pass",
             "report": "added user " + str(username) + " to project " + str(project_id)
         }
+        return _corsify_actual_response(jsonify(response))
 
     else:
         return "fail"
 
+def _build_cors_preflight_response():
+    response = make_response()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
+    return response
+
+def _corsify_actual_response(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 app.run(debug = True, host='0.0.0.0', port=8080)
