@@ -61,6 +61,7 @@ def clear3():
 def login():
     if request.method == 'OPTIONS':
         return _build_cors_preflight_response()
+
     elif request.method == 'POST':
         # need to check if username and password match
 
@@ -102,9 +103,12 @@ def login():
         return render_template('login.html')
 
 
-@app.route('/signup', methods=['POST', 'GET'])
+@app.route('/signup', methods=['POST', 'GET', 'OPTIONS'])
 def signup():
-    if request.method == 'POST':
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    elif request.method == 'POST':
         # need to check if username is unique
 
         # debugging method
@@ -171,10 +175,13 @@ def project_add():
     else:
         return "fail"
 
-@app.route('/project/<int:project_id>', methods = ['POST'])
+@app.route('/project/<int:project_id>', methods = ['POST', 'OPTIONS'])
 # data from frontend: token, project_id in url
 def get_proj_doc(project_id):
-    if request.method == 'POST':
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    elif request.method == 'POST':
         # debugging method
         clear()
         clear2()
@@ -240,11 +247,14 @@ def get_proj_doc(project_id):
     else:
         return "fail"
 
-@app.route('/project/<int:project_id>/checkin', methods= ['POST'])
+@app.route('/project/<int:project_id>/checkin', methods= ['POST', 'OPTIONS'])
 # data from frontend: token, hw1, hw2, project id in url
 # checkin means you are returning data
 def checkin(project_id):
-    if request.method == 'POST':
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    elif request.method == 'POST':
         # debugging method
         clear()
         clear2()
@@ -395,9 +405,12 @@ def checkin(project_id):
     else:
         return "fail"
 
-@app.route('/project/<int:project_id>/checkout', methods= ['POST'])
+@app.route('/project/<int:project_id>/checkout', methods= ['POST', 'OPTIONS'])
 def checkout(project_id):
-    if request.method == 'POST':
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    elif request.method == 'POST':
         # debugging method
         clear()
         clear2()
@@ -544,10 +557,13 @@ def checkout(project_id):
     else:
         return "fail"
 
-@app.route('/user/', methods= ['POST'])
+@app.route('/user/', methods= ['POST', 'OPTIONS'])
 def get_user():
     # receive a token from frontend, return user doc
-    if request.method == 'POST':
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    elif request.method == 'POST':
         clear()
         clear2()
         clear3()
@@ -579,10 +595,13 @@ def get_user():
     else:
         return "fail"
 
-@app.route('/user/project_documents', methods= ['POST'])
+@app.route('/user/project_documents', methods= ['POST', 'OPTIONS'])
 # receive token from frontend
 def get_user_projects():
-    if request.method == 'POST':
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    elif request.method == 'POST':
         clear()
         clear2()
         clear3()
@@ -644,10 +663,13 @@ def get_user_projects():
     else:
         return "fail"
 
-@app.route('/user/add_project', methods= ['POST'])
+@app.route('/user/add_project', methods= ['POST', 'OPTIONS'])
 # receive token and project name from frontend
 def create_project():
-    if request.method == 'POST':
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    elif request.method == 'POST':
         clear()
         clear2()
         clear3()
@@ -717,10 +739,13 @@ def create_project():
     else:
         return "fail"
 
-@app.route('/user/join_project', methods= ['POST'])
+@app.route('/user/join_project', methods= ['POST', 'OPTIONS'])
 # receive token and project id from frontend
 def join_project():
-    if request.method == 'POST':
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    elif request.method == 'POST':
         clear()
         clear2()
         clear3()
