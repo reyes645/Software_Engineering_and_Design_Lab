@@ -142,9 +142,8 @@ class Projects extends React.Component {
         console.log(response);
       
         let result = await response.json();
-        userdoc = result;
+        userdoc = result.userdoc;
         console.log("USERDOC", userdoc);
-        console.log(userdoc);
         // let projects = [];
         // for (let i = 0; i < userdoc.project_list.length; i++) {
         //   let project_id = userdoc.project_list[i];
