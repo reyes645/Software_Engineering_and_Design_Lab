@@ -139,7 +139,7 @@ class Projects extends React.Component {
           throw new Error(`Error! status: ${response.status}`);
         }
 
-        console.log(response);
+        console.log("RESPONSE", response);
       
         let result = await response.json();
         userdoc = result.userdoc;
