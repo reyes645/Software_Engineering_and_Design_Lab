@@ -119,26 +119,46 @@ class Project extends React.Component {
 
 class Projects extends React.Component {
   constructor(props) {
-    const token = "userToken"
+    super(props);
+    this.state = {projects_list:[]};
+    const token = "accessToken"
     let userdoc;
     const get_userdoc = async() => {
       try{
-        let response = fetch("http://3.16.154.17:8080/user", {
+        let response = await fetch("http://3.16.154.171:8080/user/", {
           "method": "POST",
+          "mode": "cors",
           "headers": {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            "Accept": "application/json",
+            "Content-Type": "application/json"
           },
-          "body": JSON.stringify({"token": token})
+          "body": JSON.stringify({"token" : token})
         });
           
         if (!response.ok) {
           throw new Error(`Error! status: ${response.status}`);
         }
+
+        console.log(response);
       
-        let result = response.json();
+        let result = await response.json();
         userdoc = result;
+        console.log("USERDOC", userdoc);
         console.log(userdoc);
+        // let projects = [];
+        // for (let i = 0; i < userdoc.project_list.length; i++) {
+        //   let project_id = userdoc.project_list[i];
+        //   let response = fetch("http://3.16.154.17:8080/project/" + {project_id}, {
+        //       "method": "POST",
+        //       "headers": {
+        //         'Accept': 'application/json',
+        //         'Content-Type': 'application/json'
+        //       },
+        //       "body": JSON.stringify({"token": token})
+        //     });
+        //     let project_doc = response.json();
+        //   projects.push(<Project key={i} properties={project_doc}></Project>)
+        // }
       } catch(err) {
         console.log("Error " + err);
       } finally {
@@ -147,24 +167,6 @@ class Projects extends React.Component {
     }
     
     get_userdoc();
-    let projects = [];
-    for (let i = 0; i < userdoc.project_list.length; i++) {
-      let project_id = userdoc.project_list[i];
-      let response = fetch("http://3.16.154.17:8080/project/" + {project_id}, {
-          "method": "POST",
-          "headers": {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          "body": JSON.stringify({"token": token})
-        });
-        let project_doc = response.json();
-      projects.push(<Project key={i} properties={project_doc}></Project>)
-    }
-    super(props);
-    this.state = {
-      projects_list: projects,
-    }
   }
   render() {
     const projects = [];
