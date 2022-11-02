@@ -823,10 +823,9 @@ def logout():
         clear2()
         clear3()
 
-        uname = request.json.get('username')
-        pword = request.json.get('password')
+        my_token = request.json.get('token')
 
-        cursor = db.user_collection.find({'username': uname})
+        cursor = db.user_collection.find({'token': my_token})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -834,7 +833,7 @@ def logout():
             someuserdocument["password_id"] = temp['password_id']
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
-        if someuserdocument['username'] == '':
+        if someuserdocument['token'] == '':
             response = {
                 "status": "fail",
                 "report": "user " + str(someuserdocument['username']) + " does not exist"
@@ -843,7 +842,7 @@ def logout():
 
         response = {
             "status": "pass",
-            "report": "successful logout for username " + uname,
+            "report": "successful logout for username " + str(someuserdocument['username'])
         }
         return _corsify_actual_response(jsonify(response))
     else:
