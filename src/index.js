@@ -23,7 +23,7 @@ class Project extends React.Component {
 
     const handleCheck_in = async() =>{
       try{
-        const response = await fetch("http://3.16.154.17:8080/project/0/checkin", {
+        const response = await fetch("http://3.16.154.171:8080/project/0/checkin", {
           "method": "POST",
           "body": JSON.stringify({
             "token": "accessToken",
@@ -54,7 +54,7 @@ class Project extends React.Component {
     
     const handleCheck_out = async() =>{
       try{
-        const response = await fetch("http://3.16.154.17:8080/project/{project_id}/checkout", {
+        const response = await fetch("http://3.16.154.171:8080/project/{project_id}/checkout", {
           "method": "POST",
           headers: {
             'Accept': 'application/json',
@@ -135,29 +135,34 @@ class Projects extends React.Component {
           "body": JSON.stringify({"token" : token})
         });
           
-        if (!response.ok) {
-          throw new Error(`Error! status: ${response.status}`);
-        }
+      if (!response.ok) {
+        throw new Error(`Error! status: ${response.status}`);
+      }
 
-        console.log("RESPONSE", response);
+      console.log(response);
       
-        let result = await response.json();
-        userdoc = result.userdoc;
-        console.log("USERDOC", userdoc);
-        // let projects = [];
-        // for (let i = 0; i < userdoc.project_list.length; i++) {
-        //   let project_id = userdoc.project_list[i];
-        //   let response = fetch("http://3.16.154.17:8080/project/" + {project_id}, {
-        //       "method": "POST",
-        //       "headers": {
-        //         'Accept': 'application/json',
-        //         'Content-Type': 'application/json'
-        //       },
-        //       "body": JSON.stringify({"token": token})
-        //     });
-        //     let project_doc = response.json();
-        //   projects.push(<Project key={i} properties={project_doc}></Project>)
-        // }
+      let result = await response.json();
+      userdoc = result.user_doc;
+      console.log("USERDOC", userdoc);
+
+      let projects = [];
+      for (let i = 0; i < userdoc.project_list.length; i++) {
+        let project_id = userdoc.project_list[i];
+        let response = await fetch("http://3.16.154.171:8080/project/" + project_id, {
+            "method": "POST",
+            "mode": "cors",
+            "headers": {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            },
+              "body": JSON.stringify({"token": token})
+            });
+            let result = await response.json();
+            console.log(result);
+            let project_doc = result.project_doc;
+            console.log("Project Doc " + i, project_doc);
+          projects.push(<Project key={i} properties={project_doc}></Project>)
+        }
       } catch(err) {
         console.log("Error " + err);
       } finally {
