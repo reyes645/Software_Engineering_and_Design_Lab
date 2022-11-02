@@ -810,6 +810,45 @@ def join_project():
     else:
         return "fail"
 
+@app.route('/logout', methods=['POST', 'OPTIONS'])
+def logout():
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    elif request.method == 'POST':
+        # need to check if username and password match
+
+        # debugging method
+        clear()
+        clear2()
+        clear3()
+
+        uname = request.json.get('username')
+        pword = request.json.get('password')
+
+        cursor = db.user_collection.find({'username': uname})
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+        if someuserdocument['username'] == '':
+            response = {
+                "status": "fail",
+                "report": "user " + str(someuserdocument['username']) + " does not exist"
+            }
+            return _corsify_actual_response(jsonify(response))
+
+        response = {
+            "status": "pass",
+            "report": "successful logout for username " + uname,
+        }
+        return _corsify_actual_response(jsonify(response))
+    else:
+        return "fail"
+
 def _build_cors_preflight_response():
     response = make_response()
     response.headers.add("Access-Control-Allow-Origin", "*")
