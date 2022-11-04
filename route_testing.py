@@ -810,6 +810,77 @@ def join_project():
     else:
         return "fail"
 
+@app.route('/user/leave_project', methods= ['POST', 'OPTIONS'])
+# receive token and project id from frontend
+def leave_project():
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    elif request.method == 'POST':
+        clear()
+        clear2()
+        clear3()
+
+        my_token = request.json.get('token')
+        project_id = request.json.get('project_id')
+
+        cursor = db.user_collection.find({'token': my_token})
+        for temp in cursor:
+            someuserdocument["username"] = temp['username']
+            someuserdocument["password"] = temp['password']
+            someuserdocument["user_id"] = temp['user_id']
+            someuserdocument["password_id"] = temp['password_id']
+            someuserdocument["token"] = temp['token']
+            someuserdocument["project_list"] = temp['project_list']
+
+        if someuserdocument['token'] == '':
+            response = {
+                "status": "fail",
+                "report": "token " + str(my_token) + " does not exist"
+            }
+            return _corsify_actual_response(jsonify(response))
+
+        cursor = db.project_collection.find({'project_id': project_id})
+        for temp in cursor:
+            proj_doc_test["project_name"] = temp['project_name']
+            proj_doc_test["project_id"] = temp['project_id']
+            proj_doc_test["hw1"] = temp['hw1']
+            proj_doc_test["hw2"] = temp['hw2']
+            proj_doc_test["collaborators"] = temp['collaborators']
+        if proj_doc_test['project_id'] == "":
+            response = {
+                "status": "fail",
+                "token_used": my_token,
+                "report": "project id " + str(project_id) + " does not exist"
+            }
+            return _corsify_actual_response(jsonify(response))
+
+        project_id_list = someuserdocument['project_list']
+        collaborator_list = proj_doc_test['collaborators']
+        username = someuserdocument['username']
+
+        if project_id not in project_id_list:
+            response = {
+                "status": "fail",
+                "report": str(someuserdocument['username']) + " is not a collaborator of project " + str(project_id)
+            }
+            return _corsify_actual_response(jsonify(response))
+
+        project_id_list.remove(project_id)
+        collaborator_list.remove(username)
+
+        db.project_collection.update_one({"project_id": project_id}, {"$set": {"collaborators": collaborator_list}})
+        db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": project_id_list}})
+
+        response = {
+            "status": "pass",
+            "report": "removed user " + str(username) + " from project " + str(project_id)
+        }
+        return _corsify_actual_response(jsonify(response))
+
+    else:
+        return "fail"
+
 @app.route('/logout', methods=['POST', 'OPTIONS'])
 def logout():
     if request.method == 'OPTIONS':
