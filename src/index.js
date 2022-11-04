@@ -252,9 +252,12 @@ class Projects extends React.Component {
         }
         
         let result = await response.json();
-        console.log("status: " + result.report);
+        console.log("report: " + result.report);
         this.setState({popmsg: result.report});
         togglePopup();
+        if (result.status !== "fail"){
+          window.location.reload();
+        }
       } catch (err){
           console.log("Error: " +err);
       }
@@ -282,6 +285,9 @@ class Projects extends React.Component {
         console.log("status: " + result.report);
         this.setState({popmsg: result.report});
         togglePopup();
+        if (result.status !== "fail"){
+          window.location.reload();
+        }
       } catch (err){
           console.log("Error: " +err);
       }
@@ -311,6 +317,9 @@ class Projects extends React.Component {
           console.log("report: " + result.report);
           this.setState({popmsg: result.report});
           togglePopup();
+          if (result.status !== "fail"){
+            window.location.reload();
+          }
         }
         
       } catch (err){
