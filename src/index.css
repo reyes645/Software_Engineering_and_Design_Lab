@@ -3,53 +3,46 @@ body {
     margin: 20px;
   }
   
-  ol, ul {
-    padding-left: 30px;
+  h2{
+    display: inline-block;
   }
-  
-  .board-row:after {
-    clear: both;
-    content: "";
-    display: table;
-  }
-  
-  .status {
-    margin-bottom: 10px;
-  }
-  
-  .square {
-    background: #fff;
-    border: 1px solid #999;
-    float: left;
-    font-size: 24px;
-    font-weight: bold;
-    line-height: 34px;
-    height: 34px;
-    margin-right: -1px;
-    margin-top: -1px;
-    padding: 0;
-    text-align: center;
-    width: 34px;
-  }
-  
-  .square:focus {
-    outline: none;
-  }
-  
-  .kbd-navigation .square:focus {
-    background: #ddd;
-  }
-  
-  .game {
-    display: flex;
-    flex-direction: row;
-  }
-  
-  .game-info {
-    margin-left: 20px;
-  }
-  
+
   .logout {
     float: right;
     background-color: red;
+    top: 10px;
+  }
+  
+  .addjoin {
+    left: 10px;
+  }
+
+  .popup-box {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.5);
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+  }
+
+  .box {
+    position: relative;
+    width: 50%;
+    min-height: 100px;
+    background-color: #FFF;
+    border: 1px solid #999;
+    border-radius: 4px;
+    margin: 20px auto;
+    padding: 20px;
+    overflow: auto;
+  }
+
+  .btn-close {
+    cursor: pointer;
+    border: 1px solid #999;
+    border-radius: 50%;
+    position: fixed;
+    right: calc(25% - 30px);
+    top: 15px;
   }
