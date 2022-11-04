@@ -238,10 +238,18 @@ def get_proj_doc(project_id):
             }
             return _corsify_actual_response(jsonify(response))
 
+        cursor = db.hardware_collection.find({'maxHW1': {"$exists": "true"}})
+        for temp in cursor:
+            hardware_doc_test['maxHW1'] = temp['maxHW1']
+            hardware_doc_test['maxHW2'] = temp['maxHW2']
+            hardware_doc_test['availHW1'] = temp['availHW1']
+            hardware_doc_test['availHW2'] = temp['availHW2']
+
         response = {
             "status": "pass",
             "token_used": my_token,
-            "project_doc": proj_doc_test
+            "project_doc": proj_doc_test,
+            "hardware_doc": hardware_doc_test
         }
         return _corsify_actual_response(jsonify(response))
     else:
