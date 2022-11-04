@@ -17,7 +17,6 @@ someuserdocument = {
     "password_id": "",
     "token": "",
     "project_list": []
-
 }
 
 proj_doc_test = {
@@ -25,7 +24,8 @@ proj_doc_test = {
     "project_id": "",
     "hw1": "",
     "hw2": "",
-    "collaborators": []
+    "collaborators": [],
+    "authorized_users": []
 }
 
 hardware_doc_test = {
@@ -49,6 +49,7 @@ def clear2():
     proj_doc_test["hw1"] = ""
     proj_doc_test["hw2"] = ""
     proj_doc_test["collaborators"] = []
+    proj_doc_test["authorized_users"] = []
 
 def clear3():
     hardware_doc_test["maxHW1"] = 0
@@ -212,6 +213,7 @@ def get_proj_doc(project_id):
             proj_doc_test["hw1"] = temp['hw1']
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
+            proj_doc_test["authorized_users"] = temp ['authorized_users']
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
@@ -315,6 +317,7 @@ def checkin(project_id):
             proj_doc_test["hw1"] = temp['hw1']
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
+            proj_doc_test["authorized_users"] = temp['authorized_users']
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
@@ -381,6 +384,7 @@ def checkin(project_id):
             proj_doc_test["hw1"] = temp['hw1']
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
+            proj_doc_test["authorized_users"] = temp['authorized_users']
 
         if methods.status_list:
             if -3 in methods.status_list:
@@ -471,6 +475,7 @@ def checkout(project_id):
             proj_doc_test["hw1"] = temp['hw1']
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
+            proj_doc_test["authorized_users"] = temp['authorized_users']
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
@@ -534,6 +539,7 @@ def checkout(project_id):
             proj_doc_test["hw1"] = temp['hw1']
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
+            proj_doc_test["authorized_users"] = temp['authorized_users']
 
         if methods.status_list:
             if -1 in methods.status_list:
@@ -650,6 +656,7 @@ def get_user_projects():
                 proj_doc_test["hw1"] = temp['hw1']
                 proj_doc_test["hw2"] = temp['hw2']
                 proj_doc_test["collaborators"] = temp['collaborators']
+                proj_doc_test["authorized_users"] = temp['authorized_users']
 
             # uncomment this is it is possible to have projects listed that do not exist
             #if proj_doc_test['project_id'] == '':
@@ -729,9 +736,11 @@ def create_project():
             "project_id": project_id,
             "hw1": 0,
             "hw2": 0,
-            "collaborators": []
+            "collaborators": [],
+            "authorized_users": []
         }
         new_project['collaborators'].append(someuserdocument['username'])
+        new_project['authorized_users'].append(someuserdocument['username'])
         someuserdocument['project_list'].append(project_id)
         plist = someuserdocument['project_list']
 
@@ -784,6 +793,7 @@ def join_project():
             proj_doc_test["hw1"] = temp['hw1']
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
+            proj_doc_test["authorized_users"] = temp['authorized_users']
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
@@ -855,6 +865,7 @@ def leave_project():
             proj_doc_test["hw1"] = temp['hw1']
             proj_doc_test["hw2"] = temp['hw2']
             proj_doc_test["collaborators"] = temp['collaborators']
+            proj_doc_test["authorized_users"] = temp['authorized_users']
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
