@@ -989,11 +989,19 @@ def join_project():
         project_id_list = someuserdocument['project_list']
         collaborator_list = proj_doc_test['collaborators']
         username = someuserdocument['username']
+        auth_users_list = proj_doc_test["authorized_users"]
 
         if project_id in project_id_list:
             response = {
                 "status": "fail",
                 "report": str(someuserdocument['username']) + " is already a collaborator of project " + str(project_id)
+            }
+            return _corsify_actual_response(jsonify(response))
+
+        if username not in auth_users_list:
+            response = {
+                "status": "fail",
+                "report": "user " + str(username) + " is not authorized to join project " + str(project_id)
             }
             return _corsify_actual_response(jsonify(response))
 
