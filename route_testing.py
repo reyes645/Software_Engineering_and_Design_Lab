@@ -121,19 +121,6 @@ def signup():
         uname = request.json.get('username')
         pword = request.json.get('password')
 
-        pword_check = 0
-
-        if '!' in pword:
-            pword_check = 1
-
-        if pword_check == 1:
-            response = {
-                "status": "fail",
-                "report": "your password contains invalid characters"
-            }
-            return _corsify_actual_response(jsonify(response))
-
-
         cursor = db.user_collection.find({'username': uname})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
@@ -147,6 +134,13 @@ def signup():
             response = {
                 "status": "fail",
                 "report": "username " + uname + " already exists"
+            }
+            return _corsify_actual_response(jsonify(response))
+
+        if '!' in pword:
+            response = {
+                "status": "fail",
+                "report": "your password contains invalid characters"
             }
             return _corsify_actual_response(jsonify(response))
 
