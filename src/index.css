@@ -13,7 +13,7 @@ body {
     top: 10px;
   }
   
-  .addjoin {
+  .btn {
     left: 10px;
   }
 
@@ -46,3 +46,12 @@ body {
     right: calc(25% - 30px);
     top: 15px;
   }
+
+  .available {
+    display: inline-block;
+    margin-left: 20px;
+  }
+
+.auth {
+  margin-top: 5px;
+}
