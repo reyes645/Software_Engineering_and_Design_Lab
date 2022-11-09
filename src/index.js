@@ -253,6 +253,36 @@ class Projects extends React.Component {
       availhw2:0,
       maxhw2:0,
     };
+
+    const login = async() => {
+      try{
+        let response = await fetch("http://3.16.154.171:8080/login", {
+          "method": "POST",
+          "headers": {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+          },
+          "body": JSON.stringify({"username":"roberto", "password":"roberto"})
+        });
+          
+        if (!response.ok) {
+          throw new Error(`Error! status: ${response.status}`);
+        }
+
+        let result = await response.json();
+        if (result.status === "fail") {
+          console.log(result.report);
+        } else {
+            document.cookie = result.access_token
+        }
+      } catch(err) {
+        console.log("Error " + err);
+      }
+    }
+
+    login();
+    const token = document.cookie.split('; ')[1];
+    console.log(token);
     let userdoc;
 
     const get_userdoc = async() => {
@@ -262,7 +292,7 @@ class Projects extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODAwNDIwNCwianRpIjoiN2ZlYmQyMjYtMjgwNi00MGE1LTlhYWItMjJjYjZjMjNlOTc5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJvYmVydG8iLCJuYmYiOjE2NjgwMDQyMDQsImV4cCI6MTY2ODA5MDYwNH0.Jx1IHom3x0s5QvgRLKexAUsYrz-pBzFls05SJ2IDYJc',
+            "Authorization": "Bearer " + token,
           },
         });
           
