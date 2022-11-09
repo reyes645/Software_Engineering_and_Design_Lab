@@ -9,6 +9,9 @@ import copy
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
+jwt = JWTManager(app)
+app.config['JWT_SECRET_KEY'] = 'Your_Secret_Key'
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
 
 someuserdocument = {
     "username": "",
@@ -95,12 +98,15 @@ def login():
                 "report": "incorrect password for user " + str(someuserdocument['username'])
             }
             return _corsify_actual_response(jsonify(response))
-        response = {
-            "status": "pass",
-            "report": "successful login with username " + uname + " and password " + pword,
-            "user_document": someuserdocument
-        }
-        return _corsify_actual_response(jsonify(response))
+
+        access_token = create_access_token(identity=uname)
+
+        #response = {
+            #"status": "pass",
+            #"report": "successful login with username " + uname + " and password " + pword,
+            #"user_document": someuserdocument
+        #}
+        return _corsify_actual_response(jsonify(access_token=access_token))
     else:
         return render_template('login.html')
 
@@ -144,6 +150,9 @@ def signup():
             }
             return _corsify_actual_response(jsonify(response))
 
+        # put in if we want to encode password
+        #new_user["password"] = hashlib.sha256(new_user["password"].encode("utf-8")).hexdigest() # encrpt password
+
         newuser = {
             "username": uname,
             "password": pword,
@@ -185,6 +194,7 @@ def project_add():
         return "fail"
 
 @app.route('/project/<int:project_id>', methods = ['POST', 'OPTIONS'])
+@jwt_required()
 # data from frontend: token, project_id in url
 def get_proj_doc(project_id):
     if request.method == 'OPTIONS':
@@ -196,9 +206,10 @@ def get_proj_doc(project_id):
         clear2()
         clear3()
 
-        my_token = request.json.get('token')
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
 
-        cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -207,10 +218,12 @@ def get_proj_doc(project_id):
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
 
-        if someuserdocument['token'] == '':
+        #if someuserdocument['token'] == '':
+        if someuserdocument['username'] == '':
             response = {
                 "status": "fail",
-                "report": "token " + str(my_token) + " does not exist"
+                #"report": "token " + str(my_token) + " does not exist"
+                "report": "user not found"
             }
             return _corsify_actual_response(jsonify(response))
 
@@ -225,12 +238,14 @@ def get_proj_doc(project_id):
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": someuserdocument['username'],
                 "report": "project id " + str(project_id) + " does not exist"
             }
             return _corsify_actual_response(jsonify(response))
 
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -243,8 +258,9 @@ def get_proj_doc(project_id):
         if project_id not in proj_list:
             response = {
                 "status": "fail",
-                "token_used": my_token,
-                "report": "this user does not have access to project " + str(project_id)
+                #"token_used": my_token,
+                "current_user": someuserdocument['username'],
+                "report": "user " + str(someuserdocument['username']) + " does not have access to project " + str(project_id)
             }
             return _corsify_actual_response(jsonify(response))
 
@@ -257,7 +273,8 @@ def get_proj_doc(project_id):
 
         response = {
             "status": "pass",
-            "token_used": my_token,
+            #"token_used": my_token,
+            "current_user": someuserdocument['username'],
             "project_doc": proj_doc_test,
             "hardware_doc": hardware_doc_test
         }
@@ -266,6 +283,7 @@ def get_proj_doc(project_id):
         return "fail"
 
 @app.route('/project/<int:project_id>/checkin', methods= ['POST', 'OPTIONS'])
+@jwt_required()
 # data from frontend: token, hw1, hw2, project id in url
 # checkin means you are returning data
 def checkin(project_id):
@@ -280,8 +298,27 @@ def checkin(project_id):
 
         hw1 = request.json.get('hw1')
         hw2 = request.json.get('hw2')
+        if not isinstance(hw1, int):
+            if not isinstance(hw2, int):
+                response = {
+                    "status": "fail",
+                    "report": "the values for hw1 and hw2 are not integers"
+                }
+                return _corsify_actual_response(jsonify(response))
+            response = {
+                "status": "fail",
+                "report": "the value for hw1 is not an integer"
+            }
+            return _corsify_actual_response(jsonify(response))
+        if not isinstance(hw2, int):
+            response = {
+                "status": "fail",
+                "report": "the value for hw2 is not an integer"
+            }
+            return _corsify_actual_response(jsonify(response))
 
-        my_token = request.json.get('token')
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
 
         # debug
         # successfully gets token, hw1, hw2 when from json
@@ -292,7 +329,8 @@ def checkin(project_id):
             #"project id": project_id
         #}
 
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
 
         # successfully retrieves information using token
         for temp in cursor:
@@ -304,10 +342,12 @@ def checkin(project_id):
             someuserdocument["project_list"] = temp['project_list']
 
         # checking if token exists
-        if someuserdocument['token'] == '':
+        #if someuserdocument['token'] == '':
+        if someuserdocument['username'] == '':
             response = {
                 "status": "fail",
-                "report": "token " + str(my_token) + " does not exist"
+                #"report": "token " + str(my_token) + " does not exist"
+                "report": "user does not exist"
             }
             return _corsify_actual_response(jsonify(response))
         # debug
@@ -329,7 +369,8 @@ def checkin(project_id):
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": someuserdocument['username'],
                 "report": "project id " + str(project_id) + " does not exist"
             }
             return _corsify_actual_response(jsonify(response))
@@ -340,7 +381,8 @@ def checkin(project_id):
         if project_id not in proj_list:
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": someuserdocument['username'],
                 "report": "this user does not have access to project " + str(project_id)
             }
             return _corsify_actual_response(jsonify(response))
@@ -417,7 +459,8 @@ def checkin(project_id):
         response = {
             "status": "pass",
             "hardware_doc": hardware_doc_test,
-            "project_doc": proj_doc_test
+            "project_doc": proj_doc_test,
+            "current_user": someuserdocument['username']
         }
         return _corsify_actual_response(jsonify(response))
 
@@ -426,6 +469,7 @@ def checkin(project_id):
         return "fail"
 
 @app.route('/project/<int:project_id>/checkout', methods= ['POST', 'OPTIONS'])
+@jwt_required()
 def checkout(project_id):
     if request.method == 'OPTIONS':
         return _build_cors_preflight_response()
@@ -439,7 +483,27 @@ def checkout(project_id):
         hw1 = request.json.get('hw1')
         hw2 = request.json.get('hw2')
 
-        my_token = request.json.get('token')
+        if not isinstance(hw1, int):
+            if not isinstance(hw2, int):
+                response = {
+                    "status": "fail",
+                    "report": "the values for hw1 and hw2 are not integers"
+                }
+                return _corsify_actual_response(jsonify(response))
+            response = {
+                "status": "fail",
+                "report": "the value for hw1 is not an integer"
+            }
+            return _corsify_actual_response(jsonify(response))
+        if not isinstance(hw2, int):
+            response = {
+                "status": "fail",
+                "report": "the value for hw2 is not an integer"
+            }
+            return _corsify_actual_response(jsonify(response))
+
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
 
         # debug
         # successfully gets token, hw1, hw2 when from json
@@ -450,7 +514,8 @@ def checkout(project_id):
             #"project id": project_id
         #}
 
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
 
         # successfully retrieves information using token
         for temp in cursor:
@@ -462,10 +527,12 @@ def checkout(project_id):
             someuserdocument["project_list"] = temp['project_list']
 
         # checking if token exists
-        if someuserdocument['token'] == '':
+        #if someuserdocument['token'] == '':
+        if someuserdocument['username'] == '':
             response = {
                 "status": "fail",
-                "report": "token " + str(my_token) + " does not exist"
+                #"report": "token " + str(my_token) + " does not exist"
+                "report": "user does not exist"
             }
             return _corsify_actual_response(jsonify(response))
         # debug
@@ -487,7 +554,8 @@ def checkout(project_id):
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
-                "token used": my_token,
+                #"token used": my_token,
+                "current_user": someuserdocument['username'],
                 "report": "project id " + str(project_id) + " does not exist"
             }
             return _corsify_actual_response(jsonify(response))
@@ -498,7 +566,8 @@ def checkout(project_id):
         if project_id not in proj_list:
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": someuserdocument['username'],
                 "report": "this user does not have access to project " + str(project_id)
             }
             return _corsify_actual_response(jsonify(response))
@@ -571,6 +640,7 @@ def checkout(project_id):
 
         response = {
             "status": "pass",
+            "current_user": someuserdocument['username'],
             "hardware_doc": hardware_doc_test,
             "project_doc": proj_doc_test
         }
@@ -580,6 +650,7 @@ def checkout(project_id):
         return "fail"
 
 @app.route('/project/<int:project_id>/add_authorized_user', methods= ['POST', 'OPTIONS'])
+@jwt_required()
 def add_authorized_user(project_id):
     # takes in token and authorized user
     if request.method == 'OPTIONS':
@@ -593,10 +664,12 @@ def add_authorized_user(project_id):
 
         user = request.json.get('user')
 
-        my_token = request.json.get('token')
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
 
         # check if token exists
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -604,10 +677,11 @@ def add_authorized_user(project_id):
             someuserdocument["password_id"] = temp['password_id']
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
-        if someuserdocument['token'] == '':
+        #if someuserdocument['token'] == '':
+        if someuserdocument['username'] == '':
             response = {
                 "status": "fail",
-                "report": "token " + str(my_token) + " does not exist"
+                "report": "user does not exist"
             }
             return _corsify_actual_response(jsonify(response))
 
@@ -623,7 +697,8 @@ def add_authorized_user(project_id):
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
-                "token used": my_token,
+                #"token used": my_token,
+                "current_user": current_user,
                 "report": "project id " + str(project_id) + " does not exist"
             }
             return _corsify_actual_response(jsonify(response))
@@ -633,7 +708,8 @@ def add_authorized_user(project_id):
         if project_id not in proj_list:
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": current_user,
                 "report": "this user does not have access to project " + str(project_id)
             }
             return _corsify_actual_response(jsonify(response))
@@ -642,7 +718,8 @@ def add_authorized_user(project_id):
         if user not in existing_users:
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": current_user,
                 "report": "user " + str(user) + " does not exist"
             }
             return _corsify_actual_response(jsonify(response))
@@ -650,7 +727,8 @@ def add_authorized_user(project_id):
         if user in proj_doc_test["authorized_users"]:
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": current_user,
                 "report": "user " + str(user) + " is already an authorized user"
             }
             return _corsify_actual_response(jsonify(response))
@@ -662,7 +740,8 @@ def add_authorized_user(project_id):
 
         response = {
             "status": "pass",
-            "token_used": my_token,
+            #"token_used": my_token,
+            "current_user": current_user,
             "report": "user " + str(user) + " is now an authorized user of project " + str(project_id),
             "project_doc": proj_doc_test
         }
@@ -673,6 +752,7 @@ def add_authorized_user(project_id):
 
 
 @app.route('/project/<int:project_id>/remove_authorized_user', methods=['POST', 'OPTIONS'])
+@jwt_required()
 def remove_authorized_user(project_id):
     # takes in token and authorized user
     if request.method == 'OPTIONS':
@@ -686,10 +766,12 @@ def remove_authorized_user(project_id):
 
         user = request.json.get('user')
 
-        my_token = request.json.get('token')
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
 
         # check if token exists
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -700,7 +782,7 @@ def remove_authorized_user(project_id):
         if someuserdocument['token'] == '':
             response = {
                 "status": "fail",
-                "report": "token " + str(my_token) + " does not exist"
+                "report": "user does not exist"
             }
             return _corsify_actual_response(jsonify(response))
 
@@ -716,7 +798,8 @@ def remove_authorized_user(project_id):
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
-                "token used": my_token,
+                #"token used": my_token,
+                "current_user": someuserdocument['username'],
                 "report": "project id " + str(project_id) + " does not exist"
             }
             return _corsify_actual_response(jsonify(response))
@@ -726,7 +809,8 @@ def remove_authorized_user(project_id):
         if project_id not in proj_list:
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": someuserdocument['username'],
                 "report": "this user does not have access to project " + str(project_id)
             }
             return _corsify_actual_response(jsonify(response))
@@ -734,7 +818,8 @@ def remove_authorized_user(project_id):
         if user not in proj_doc_test["authorized_users"]:
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": someuserdocument['username'],
                 "report": "user " + str(user) + " is not an authorized user"
             }
             return _corsify_actual_response(jsonify(response))
@@ -743,7 +828,8 @@ def remove_authorized_user(project_id):
         if len(auth_user_list) == 1:
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": someuserdocument['username'],
                 "report": "user " + str(auth_user_list[0]) + " is the last authorized user of project " + str(project_id)
             }
             return _corsify_actual_response(jsonify(response))
@@ -753,7 +839,8 @@ def remove_authorized_user(project_id):
 
         response = {
             "status": "pass",
-            "token_used": my_token,
+            #"token_used": my_token,
+            "current_user": someuserdocument['username'],
             "report": "user " + str(user) + " is no longer an authorized user of project " + str(project_id),
             "project_doc": proj_doc_test
         }
@@ -764,6 +851,7 @@ def remove_authorized_user(project_id):
 
 
 @app.route('/user/', methods= ['POST', 'OPTIONS'])
+@jwt_required()
 def get_user():
     # receive a token from frontend, return user doc
     if request.method == 'OPTIONS':
@@ -774,9 +862,11 @@ def get_user():
         clear2()
         clear3()
 
-        my_token = request.json.get('token')
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
 
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -785,10 +875,11 @@ def get_user():
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
 
-        if someuserdocument['token'] == '':
+        #if someuserdocument['token'] == '':
+        if someuserdocument['username'] == '':
             response = {
                 "status": "fail",
-                "report": "token " + str(my_token) + " does not exist"
+                "report": "user does not exist"
             }
             return _corsify_actual_response(jsonify(response))
 
@@ -802,6 +893,7 @@ def get_user():
         return "fail"
 
 @app.route('/user/project_documents', methods= ['POST', 'OPTIONS'])
+@jwt_required()
 # receive token from frontend
 def get_user_projects():
     if request.method == 'OPTIONS':
@@ -812,9 +904,11 @@ def get_user_projects():
         clear2()
         clear3()
 
-        my_token = request.json.get('token')
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
 
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -823,10 +917,11 @@ def get_user_projects():
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
 
-        if someuserdocument['token'] == '':
+        #if someuserdocument['token'] == '':
+        if someuserdocument['username'] == '':
             response = {
                 "status": "fail",
-                "report": "token " + str(my_token) + " does not exist"
+                "report": "user does not exist"
             }
             return _corsify_actual_response(jsonify(response))
 
@@ -863,6 +958,7 @@ def get_user_projects():
 
         response = {
             "status": "pass",
+            "current_user": someuserdocument['username'],
             "project_list": project_doc_list
         }
         return _corsify_actual_response(jsonify(response))
@@ -871,6 +967,7 @@ def get_user_projects():
         return "fail"
 
 @app.route('/user/add_project', methods= ['POST', 'OPTIONS'])
+@jwt_required()
 # receive token and project name from frontend
 def create_project():
     if request.method == 'OPTIONS':
@@ -881,17 +978,20 @@ def create_project():
         clear2()
         clear3()
 
-        my_token = request.json.get('token')
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
         pname = request.json.get('project_name')
 
-        if pname == None:
+        if pname == None or pname == '' or pname.isspace():
             response = {
                 "status": "fail",
+                "current_user": current_user,
                 "report": "no name detected"
             }
             return _corsify_actual_response(jsonify(response))
 
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -900,10 +1000,11 @@ def create_project():
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
 
-        if someuserdocument['token'] == '':
+        #if someuserdocument['token'] == '':
+        if someuserdocument['username'] == '':
             response = {
                 "status": "fail",
-                "report": "token " + str(my_token) + " does not exist"
+                "report": "user does not exist"
             }
             return _corsify_actual_response(jsonify(response))
 
@@ -937,7 +1038,7 @@ def create_project():
         plist = someuserdocument['project_list']
 
         x = db.project_collection.insert_one(new_project)
-        db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": plist}})
+        db.user_collection.update_one({"username": current_user}, {"$set": {"project_list": plist}})
 
         response = {
             "status": "pass",
@@ -949,6 +1050,7 @@ def create_project():
         return "fail"
 
 @app.route('/user/join_project', methods= ['POST', 'OPTIONS'])
+@jwt_required()
 # receive token and project id from frontend
 def join_project():
     if request.method == 'OPTIONS':
@@ -959,10 +1061,12 @@ def join_project():
         clear2()
         clear3()
 
-        my_token = request.json.get('token')
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
         project_id = request.json.get('project_id')
 
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -971,10 +1075,11 @@ def join_project():
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
 
-        if someuserdocument['token'] == '':
+        #if someuserdocument['token'] == '':
+        if someuserdocument['username'] == '':
             response = {
                 "status": "fail",
-                "report": "token " + str(my_token) + " does not exist"
+                "report": "user does not exist"
             }
             return _corsify_actual_response(jsonify(response))
 
@@ -989,7 +1094,8 @@ def join_project():
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "current_user": current_user,
                 "report": "project id " + str(project_id) + " does not exist"
             }
             return _corsify_actual_response(jsonify(response))
@@ -1017,7 +1123,7 @@ def join_project():
         collaborator_list.append(username)
 
         db.project_collection.update_one({"project_id": project_id}, {"$set": {"collaborators": collaborator_list}})
-        db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": project_id_list}})
+        db.user_collection.update_one({"username": current_user}, {"$set": {"project_list": project_id_list}})
 
         response = {
             "status": "pass",
@@ -1029,6 +1135,7 @@ def join_project():
         return "fail"
 
 @app.route('/user/leave_project', methods= ['POST', 'OPTIONS'])
+@jwt_required()
 # receive token and project id from frontend
 def leave_project():
     if request.method == 'OPTIONS':
@@ -1039,10 +1146,12 @@ def leave_project():
         clear2()
         clear3()
 
-        my_token = request.json.get('token')
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
         project_id = request.json.get('project_id')
 
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = db.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -1051,10 +1160,11 @@ def leave_project():
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
 
-        if someuserdocument['token'] == '':
+        #if someuserdocument['token'] == '':
+        if someuserdocument['username'] == '':
             response = {
                 "status": "fail",
-                "report": "token " + str(my_token) + " does not exist"
+                "report": "user does not exist"
             }
             return _corsify_actual_response(jsonify(response))
 
@@ -1069,7 +1179,8 @@ def leave_project():
         if proj_doc_test['project_id'] == "":
             response = {
                 "status": "fail",
-                "token_used": my_token,
+                #"token_used": my_token,
+                "currnet_user": current_user,
                 "report": "project id " + str(project_id) + " does not exist"
             }
             return _corsify_actual_response(jsonify(response))
@@ -1089,7 +1200,7 @@ def leave_project():
         collaborator_list.remove(username)
 
         db.project_collection.update_one({"project_id": project_id}, {"$set": {"collaborators": collaborator_list}})
-        db.user_collection.update_one({"token": my_token}, {"$set": {"project_list": project_id_list}})
+        db.user_collection.update_one({"username": current_user}, {"$set": {"project_list": project_id_list}})
 
         response = {
             "status": "pass",

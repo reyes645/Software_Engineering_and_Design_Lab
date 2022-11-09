@@ -42,7 +42,8 @@ def login():
 		encrpted_password = hashlib.sha256(login_details['password'].encode("utf-8")).hexdigest()
 		if encrpted_password == user_from_db['password']:
 			access_token = create_access_token(identity=user_from_db['username']) # create jwt token
-			return jsonify(access_token=access_token), 200
+			yeehaw = jsonify(access_token=access_token)
+			return yeehaw, 200
 
 	return jsonify({'msg': 'The username or password is incorrect'}), 401
 
