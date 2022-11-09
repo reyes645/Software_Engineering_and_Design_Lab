@@ -2,13 +2,13 @@ import driver
 from database import Database as db
 from project import Project
 from flask import Flask, request, jsonify, render_template, make_response
-# from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+from flask_jwt_extended import create_access_token, JWTManager, jwt_required, get_jwt_identity
 #from flask_cors import CORS
 import methods
 import copy
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
-#CORS(app)
 
 someuserdocument = {
     "username": "",
