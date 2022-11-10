@@ -50,7 +50,7 @@ class Project extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODAwNDIwNCwianRpIjoiN2ZlYmQyMjYtMjgwNi00MGE1LTlhYWItMjJjYjZjMjNlOTc5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJvYmVydG8iLCJuYmYiOjE2NjgwMDQyMDQsImV4cCI6MTY2ODA5MDYwNH0.Jx1IHom3x0s5QvgRLKexAUsYrz-pBzFls05SJ2IDYJc',
+            "Authorization": "Bearer " + this.props.token,
           },
           "body": JSON.stringify({
             "hw1": parseInt(this.state.hw1check),
@@ -86,7 +86,7 @@ class Project extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODAwNDIwNCwianRpIjoiN2ZlYmQyMjYtMjgwNi00MGE1LTlhYWItMjJjYjZjMjNlOTc5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJvYmVydG8iLCJuYmYiOjE2NjgwMDQyMDQsImV4cCI6MTY2ODA5MDYwNH0.Jx1IHom3x0s5QvgRLKexAUsYrz-pBzFls05SJ2IDYJc',
+            "Authorization": "Bearer " + this.props.token,
           },
           "body": JSON.stringify({
             "hw1": parseInt(this.state.hw1check),
@@ -123,10 +123,10 @@ class Project extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODAwNDIwNCwianRpIjoiN2ZlYmQyMjYtMjgwNi00MGE1LTlhYWItMjJjYjZjMjNlOTc5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJvYmVydG8iLCJuYmYiOjE2NjgwMDQyMDQsImV4cCI6MTY2ODA5MDYwNH0.Jx1IHom3x0s5QvgRLKexAUsYrz-pBzFls05SJ2IDYJc',
+            "Authorization": "Bearer " + this.props.token,
           },
           "body": JSON.stringify({
-            "user": "testUser",
+            "user": this.state.authUser,
           }),
         });
         
@@ -156,7 +156,7 @@ class Project extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODAwNDIwNCwianRpIjoiN2ZlYmQyMjYtMjgwNi00MGE1LTlhYWItMjJjYjZjMjNlOTc5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJvYmVydG8iLCJuYmYiOjE2NjgwMDQyMDQsImV4cCI6MTY2ODA5MDYwNH0.Jx1IHom3x0s5QvgRLKexAUsYrz-pBzFls05SJ2IDYJc',
+            "Authorization": "Bearer " + this.props.token,
           },
           "body": JSON.stringify({
             "user": this.state.authUser,
@@ -252,6 +252,7 @@ class Projects extends React.Component {
       maxhw1:0,
       availhw2:0,
       maxhw2:0,
+      token: " ",
     };
 
     const login = async() => {
@@ -273,6 +274,7 @@ class Projects extends React.Component {
         if (result.status === "fail") {
           console.log(result.report);
         } else {
+            console.log(result);
             document.cookie = result.access_token
         }
       } catch(err) {
@@ -281,8 +283,6 @@ class Projects extends React.Component {
     }
 
     login();
-    const token = document.cookie.split('; ')[1];
-    console.log(token);
     let userdoc;
 
     const get_userdoc = async() => {
@@ -292,7 +292,7 @@ class Projects extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + token,
+            "Authorization": "Bearer " + document.cookie.split('; ')[1],
           },
         });
           
@@ -315,7 +315,7 @@ class Projects extends React.Component {
                 "headers": {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODAwNDIwNCwianRpIjoiN2ZlYmQyMjYtMjgwNi00MGE1LTlhYWItMjJjYjZjMjNlOTc5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJvYmVydG8iLCJuYmYiOjE2NjgwMDQyMDQsImV4cCI6MTY2ODA5MDYwNH0.Jx1IHom3x0s5QvgRLKexAUsYrz-pBzFls05SJ2IDYJc',
+                "Authorization": "Bearer " + document.cookie.split('; ')[1],
                 },
               });
 
@@ -358,7 +358,7 @@ class Projects extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODAwNDIwNCwianRpIjoiN2ZlYmQyMjYtMjgwNi00MGE1LTlhYWItMjJjYjZjMjNlOTc5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJvYmVydG8iLCJuYmYiOjE2NjgwMDQyMDQsImV4cCI6MTY2ODA5MDYwNH0.Jx1IHom3x0s5QvgRLKexAUsYrz-pBzFls05SJ2IDYJc',
+            "Authorization": "Bearer " + document.cookie.split('; ')[1],
           },
           "body": JSON.stringify({
             "project_id": parseInt(this.state.joinID),
@@ -388,7 +388,7 @@ class Projects extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODAwNDIwNCwianRpIjoiN2ZlYmQyMjYtMjgwNi00MGE1LTlhYWItMjJjYjZjMjNlOTc5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJvYmVydG8iLCJuYmYiOjE2NjgwMDQyMDQsImV4cCI6MTY2ODA5MDYwNH0.Jx1IHom3x0s5QvgRLKexAUsYrz-pBzFls05SJ2IDYJc',
+            "Authorization": "Bearer " + document.cookie.split('; ')[1],
           },
           "body": JSON.stringify({
             "token": "accessToken",
@@ -421,7 +421,7 @@ class Projects extends React.Component {
             "headers": {
               "Accept": "application/json",
               "Content-Type": "application/json",
-              "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODAwNDIwNCwianRpIjoiN2ZlYmQyMjYtMjgwNi00MGE1LTlhYWItMjJjYjZjMjNlOTc5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJvYmVydG8iLCJuYmYiOjE2NjgwMDQyMDQsImV4cCI6MTY2ODA5MDYwNH0.Jx1IHom3x0s5QvgRLKexAUsYrz-pBzFls05SJ2IDYJc',
+              "Authorization": "Bearer " + document.cookie.split('; ')[1],
             },
             "body": JSON.stringify({
               "project_name": this.state.addName,
@@ -453,7 +453,7 @@ class Projects extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODAwNDIwNCwianRpIjoiN2ZlYmQyMjYtMjgwNi00MGE1LTlhYWItMjJjYjZjMjNlOTc5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InJvYmVydG8iLCJuYmYiOjE2NjgwMDQyMDQsImV4cCI6MTY2ODA5MDYwNH0.Jx1IHom3x0s5QvgRLKexAUsYrz-pBzFls05SJ2IDYJc',
+            "Authorization": "Bearer " + document.cookie.split('; ')[1],
           },
         });
       
@@ -478,7 +478,9 @@ class Projects extends React.Component {
     for (let i = 0; i < this.state.projects_list.length; i++) {
         // note: we are adding a key prop here to allow react to uniquely identify each
         // element in this array. see: https://reactjs.org/docs/lists-and-keys.html
-        projects.push(<Project key={i} properties={this.state.projects_list[i]} updateAvail={updateAvailable} availhw1= {this.state.availhw1} availhw2= {this.state.availhw2}/>);
+        projects.push(<Project key={i} properties={this.state.projects_list[i]} 
+                      updateAvail={updateAvailable} availhw1= {this.state.availhw1} 
+                      availhw2= {this.state.availhw2} token={document.cookie.split('; ')[1]}/>);
     }
 
     return (
