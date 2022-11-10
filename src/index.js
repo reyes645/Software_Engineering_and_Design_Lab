@@ -455,6 +455,7 @@ class Projects extends React.Component {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + document.cookie.split('; ')[1],
           },
+          "body":JSON.stringify({"token":"accessToken"})
         });
       
         if (!response.ok) {
