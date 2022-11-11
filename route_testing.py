@@ -1,17 +1,47 @@
 import driver
-from database import Database as db
+from database import Database as datab
 from project import Project
-from flask import Flask, request, jsonify, render_template, make_response
-from flask_jwt_extended import create_access_token, JWTManager, jwt_required, get_jwt_identity
+from flask import Flask, request, jsonify, render_template, make_response, redirect
+from flask_jwt_extended import create_access_token, JWTManager, jwt_required, get_jwt_identity, unset_jwt_cookies, \
+    get_jwt
 #from flask_cors import CORS
 import methods
 import copy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import redis
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-jwt = JWTManager(app)
+
+ACCESS_EXPIRES = timedelta(hours=1)
 app.config['JWT_SECRET_KEY'] = 'Your_Secret_Key'
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = ACCESS_EXPIRES
+jwt = JWTManager(app)
+
+#jwt_redis_blocklist = redis.StrictRedis(
+#    host="localhost", port=6379, db=0, decode_responses=True
+#)
+
+#@jwt.token_in_blocklist_loader
+#def check_if_token_is_revoked(jwt_hear, jwt_payload: dict):
+#    jti = jwt_payload["jti"]
+#    token_in_redis = jwt_redis_blocklist.get(jti)
+#    return token_in_redis is not None
+
+#app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tokens.sqlite3"
+#app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+#dibi = SQLAlchemy(app)
+
+#class TokenBlocklist(dibi.Model):
+#    id = dibi.Column(dibi.Integer, primary_key=True)
+#    jti = dibi.Column(dibi.String(36), nullable=False, index=True)
+#    created_at = dibi.Column(dibi.DateTime, nullable=False)
+
+#@jwt.token_in_blocklist_loader
+#def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
+#    jti = jwt_payload["jti"]
+#    token = dibi.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+#    return token is not None
 
 someuserdocument = {
     "username": "",
@@ -78,7 +108,7 @@ def login():
         uname = request.json.get('username')
         pword = request.json.get('password')
 
-        cursor = db.user_collection.find({'username': uname})
+        cursor = datab.user_collection.find({'username': uname})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -127,7 +157,7 @@ def signup():
         uname = request.json.get('username')
         pword = request.json.get('password')
 
-        cursor = db.user_collection.find({'username': uname})
+        cursor = datab.user_collection.find({'username': uname})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -162,7 +192,7 @@ def signup():
             "project_list": []
         }
 
-        x = db.user_collection.insert_one(newuser)
+        x = datab.user_collection.insert_one(newuser)
 
         response = {
             "status": "pass",
@@ -209,7 +239,7 @@ def get_proj_doc(project_id):
         #my_token = request.json.get('token')
         current_user = get_jwt_identity()
 
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -227,7 +257,7 @@ def get_proj_doc(project_id):
             }
             return _corsify_actual_response(jsonify(response))
 
-        cursor = db.project_collection.find({'project_id': project_id})
+        cursor = datab.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
             proj_doc_test["project_id"] = temp['project_id']
@@ -245,7 +275,7 @@ def get_proj_doc(project_id):
             return _corsify_actual_response(jsonify(response))
 
         #cursor = db.user_collection.find({'token': my_token})
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -264,7 +294,7 @@ def get_proj_doc(project_id):
             }
             return _corsify_actual_response(jsonify(response))
 
-        cursor = db.hardware_collection.find({'maxHW1': {"$exists": "true"}})
+        cursor = datab.hardware_collection.find({'maxHW1': {"$exists": "true"}})
         for temp in cursor:
             hardware_doc_test['maxHW1'] = temp['maxHW1']
             hardware_doc_test['maxHW2'] = temp['maxHW2']
@@ -330,7 +360,7 @@ def checkin(project_id):
         #}
 
         #cursor = db.user_collection.find({'token': my_token})
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
 
         # successfully retrieves information using token
         for temp in cursor:
@@ -358,7 +388,7 @@ def checkin(project_id):
                 #"user_doc": someuserdocument
             #}
 
-        cursor = db.project_collection.find({'project_id': project_id})
+        cursor = datab.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
             proj_doc_test["project_id"] = temp['project_id']
@@ -420,14 +450,14 @@ def checkin(project_id):
         #methods.hardware_checkin(hw1, hw2)
         methods.project_checkin(project_id, hw1, hw2)
 
-        cursor = db.hardware_collection.find({'maxHW1': {"$exists": "true"}})
+        cursor = datab.hardware_collection.find({'maxHW1': {"$exists": "true"}})
         for temp in cursor:
             hardware_doc_test['maxHW1'] = temp['maxHW1']
             hardware_doc_test['maxHW2'] = temp['maxHW2']
             hardware_doc_test['availHW1'] = temp['availHW1']
             hardware_doc_test['availHW2'] = temp['availHW2']
 
-        cursor = db.project_collection.find({'project_id': project_id})
+        cursor = datab.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
             proj_doc_test["project_id"] = temp['project_id']
@@ -515,7 +545,7 @@ def checkout(project_id):
         #}
 
         #cursor = db.user_collection.find({'token': my_token})
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
 
         # successfully retrieves information using token
         for temp in cursor:
@@ -543,7 +573,7 @@ def checkout(project_id):
                 #"user_doc": someuserdocument
             #}
 
-        cursor = db.project_collection.find({'project_id': project_id})
+        cursor = datab.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
             proj_doc_test["project_id"] = temp['project_id']
@@ -602,14 +632,14 @@ def checkout(project_id):
 
         methods.project_checkout(project_id, hw1, hw2)
 
-        cursor = db.hardware_collection.find({'maxHW1': {"$exists": "true"}})
+        cursor = datab.hardware_collection.find({'maxHW1': {"$exists": "true"}})
         for temp in cursor:
             hardware_doc_test['maxHW1'] = temp['maxHW1']
             hardware_doc_test['maxHW2'] = temp['maxHW2']
             hardware_doc_test['availHW1'] = temp['availHW1']
             hardware_doc_test['availHW2'] = temp['availHW2']
 
-        cursor = db.project_collection.find({'project_id': project_id})
+        cursor = datab.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
             proj_doc_test["project_id"] = temp['project_id']
@@ -663,13 +693,19 @@ def add_authorized_user(project_id):
         clear3()
 
         user = request.json.get('user')
+        if user == None:
+            response = {
+                "status": "fail",
+                "report": "no user detected"
+            }
+            return _corsify_actual_response(jsonify(response))
 
         #my_token = request.json.get('token')
         current_user = get_jwt_identity()
 
         # check if token exists
         #cursor = db.user_collection.find({'token': my_token})
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -686,7 +722,7 @@ def add_authorized_user(project_id):
             return _corsify_actual_response(jsonify(response))
 
         # check if project exists
-        cursor = db.project_collection.find({'project_id': project_id})
+        cursor = datab.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
             proj_doc_test["project_id"] = temp['project_id']
@@ -714,7 +750,7 @@ def add_authorized_user(project_id):
             }
             return _corsify_actual_response(jsonify(response))
 
-        existing_users = db.user_collection.distinct('username')
+        existing_users = datab.user_collection.distinct('username')
         if user not in existing_users:
             response = {
                 "status": "fail",
@@ -736,7 +772,7 @@ def add_authorized_user(project_id):
         auth_user_list = proj_doc_test["authorized_users"]
         auth_user_list.append(user)
 
-        db.project_collection.update_one({"project_id": project_id}, {"$set": {"authorized_users": auth_user_list}})
+        datab.project_collection.update_one({"project_id": project_id}, {"$set": {"authorized_users": auth_user_list}})
 
         response = {
             "status": "pass",
@@ -765,13 +801,19 @@ def remove_authorized_user(project_id):
         clear3()
 
         user = request.json.get('user')
+        if user == None:
+            response = {
+                "status": "fail",
+                "report": "no user detected"
+            }
+            return _corsify_actual_response(jsonify(response))
 
         #my_token = request.json.get('token')
         current_user = get_jwt_identity()
 
         # check if token exists
         #cursor = db.user_collection.find({'token': my_token})
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -787,7 +829,7 @@ def remove_authorized_user(project_id):
             return _corsify_actual_response(jsonify(response))
 
         # check if project exists
-        cursor = db.project_collection.find({'project_id': project_id})
+        cursor = datab.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
             proj_doc_test["project_id"] = temp['project_id']
@@ -835,7 +877,7 @@ def remove_authorized_user(project_id):
             return _corsify_actual_response(jsonify(response))
         auth_user_list.remove(user)
 
-        db.project_collection.update_one({"project_id": project_id}, {"$set": {"authorized_users": auth_user_list}})
+        datab.project_collection.update_one({"project_id": project_id}, {"$set": {"authorized_users": auth_user_list}})
 
         response = {
             "status": "pass",
@@ -866,7 +908,7 @@ def get_user():
         current_user = get_jwt_identity()
 
         #cursor = db.user_collection.find({'token': my_token})
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -908,7 +950,7 @@ def get_user_projects():
         current_user = get_jwt_identity()
 
         #cursor = db.user_collection.find({'token': my_token})
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -936,7 +978,7 @@ def get_user_projects():
         for project_id in project_id_list:
             clear2()
 
-            cursor = db.project_collection.find({'project_id': project_id})
+            cursor = datab.project_collection.find({'project_id': project_id})
             for temp in cursor:
                 proj_doc_test["project_name"] = temp['project_name']
                 proj_doc_test["project_id"] = temp['project_id']
@@ -991,7 +1033,7 @@ def create_project():
             return _corsify_actual_response(jsonify(response))
 
         #cursor = db.user_collection.find({'token': my_token})
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -1010,8 +1052,8 @@ def create_project():
 
         project_id = 0
 
-        cursor = db.project_collection.find({'project_id': project_id})
-        ids = db.project_collection.distinct('project_id')
+        cursor = datab.project_collection.find({'project_id': project_id})
+        ids = datab.project_collection.distinct('project_id')
 
         # debug
         #for id in ids:
@@ -1037,8 +1079,8 @@ def create_project():
         someuserdocument['project_list'].append(project_id)
         plist = someuserdocument['project_list']
 
-        x = db.project_collection.insert_one(new_project)
-        db.user_collection.update_one({"username": current_user}, {"$set": {"project_list": plist}})
+        x = datab.project_collection.insert_one(new_project)
+        datab.user_collection.update_one({"username": current_user}, {"$set": {"project_list": plist}})
 
         response = {
             "status": "pass",
@@ -1066,7 +1108,7 @@ def join_project():
         project_id = request.json.get('project_id')
 
         #cursor = db.user_collection.find({'token': my_token})
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -1083,7 +1125,7 @@ def join_project():
             }
             return _corsify_actual_response(jsonify(response))
 
-        cursor = db.project_collection.find({'project_id': project_id})
+        cursor = datab.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
             proj_doc_test["project_id"] = temp['project_id']
@@ -1122,8 +1164,8 @@ def join_project():
         project_id_list.append(project_id)
         collaborator_list.append(username)
 
-        db.project_collection.update_one({"project_id": project_id}, {"$set": {"collaborators": collaborator_list}})
-        db.user_collection.update_one({"username": current_user}, {"$set": {"project_list": project_id_list}})
+        datab.project_collection.update_one({"project_id": project_id}, {"$set": {"collaborators": collaborator_list}})
+        datab.user_collection.update_one({"username": current_user}, {"$set": {"project_list": project_id_list}})
 
         response = {
             "status": "pass",
@@ -1151,7 +1193,7 @@ def leave_project():
         project_id = request.json.get('project_id')
 
         #cursor = db.user_collection.find({'token': my_token})
-        cursor = db.user_collection.find({'username': current_user})
+        cursor = datab.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -1168,7 +1210,7 @@ def leave_project():
             }
             return _corsify_actual_response(jsonify(response))
 
-        cursor = db.project_collection.find({'project_id': project_id})
+        cursor = datab.project_collection.find({'project_id': project_id})
         for temp in cursor:
             proj_doc_test["project_name"] = temp['project_name']
             proj_doc_test["project_id"] = temp['project_id']
@@ -1180,7 +1222,7 @@ def leave_project():
             response = {
                 "status": "fail",
                 #"token_used": my_token,
-                "currnet_user": current_user,
+                "current_user": current_user,
                 "report": "project id " + str(project_id) + " does not exist"
             }
             return _corsify_actual_response(jsonify(response))
@@ -1199,8 +1241,8 @@ def leave_project():
         project_id_list.remove(project_id)
         collaborator_list.remove(username)
 
-        db.project_collection.update_one({"project_id": project_id}, {"$set": {"collaborators": collaborator_list}})
-        db.user_collection.update_one({"username": current_user}, {"$set": {"project_list": project_id_list}})
+        datab.project_collection.update_one({"project_id": project_id}, {"$set": {"collaborators": collaborator_list}})
+        datab.user_collection.update_one({"username": current_user}, {"$set": {"project_list": project_id_list}})
 
         response = {
             "status": "pass",
@@ -1212,6 +1254,7 @@ def leave_project():
         return "fail"
 
 @app.route('/logout', methods=['POST', 'OPTIONS'])
+@jwt_required()
 def logout():
     if request.method == 'OPTIONS':
         return _build_cors_preflight_response()
@@ -1224,9 +1267,11 @@ def logout():
         clear2()
         clear3()
 
-        my_token = request.json.get('token')
+        #my_token = request.json.get('token')
+        current_user = get_jwt_identity()
 
-        cursor = db.user_collection.find({'token': my_token})
+        #cursor = db.user_collection.find({'token': my_token})
+        cursor = datab.user_collection.find({'username': current_user})
         for temp in cursor:
             someuserdocument["username"] = temp['username']
             someuserdocument["password"] = temp['password']
@@ -1234,17 +1279,37 @@ def logout():
             someuserdocument["password_id"] = temp['password_id']
             someuserdocument["token"] = temp['token']
             someuserdocument["project_list"] = temp['project_list']
-        if someuserdocument['token'] == '':
+        #if someuserdocument['token'] == '':
+        if someuserdocument['username'] == '':
             response = {
                 "status": "fail",
                 "report": "user " + str(someuserdocument['username']) + " does not exist"
             }
             return _corsify_actual_response(jsonify(response))
 
+        #jti = get_jwt()["jti"]
+        #now = datetime.now(timezone.utc)
+        #dibi.session.add(TokenBlocklist(jti=jti, created_at=now))
+        #dibi.session.commit()
+
         response = {
             "status": "pass",
             "report": "successful logout for username " + str(someuserdocument['username'])
         }
+
+        #try:
+        #    resp = jsonify({"logout": True})
+        #    unset_jwt_cookies(resp)
+        #    return resp
+        #except:
+        #    return jsonify({"error": "something went wrong"})
+
+        #unset_jwt_cookies(response)
+
+        #jti = get_jwt()["jti"]
+        #jwt_redis_blocklist.set(jti, "", ex=ACCESS_EXPIRES)
+        #response = "access token revoked"
+
         return _corsify_actual_response(jsonify(response))
     else:
         return "fail"
@@ -1260,4 +1325,5 @@ def _corsify_actual_response(response):
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+#dibi.create_all()
 app.run(debug = True, host='0.0.0.0', port=8080)
