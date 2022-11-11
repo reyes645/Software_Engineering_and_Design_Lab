@@ -24,13 +24,14 @@ class Projects extends React.Component {
     let userdoc;
 
     const get_userdoc = async() => {
+      console.log(document.cookie.split('; ')[1])
       try{
         let response = await fetch("http://3.16.154.171:8080/user/", {
           "method": "POST",
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + document.cookie.split('; ')[1],
+            "Authorization": "Bearer " + document.cookie,
           },
         });
           
