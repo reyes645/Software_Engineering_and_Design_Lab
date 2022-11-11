@@ -24,7 +24,7 @@ class Projects extends React.Component {
     let userdoc;
 
     const get_userdoc = async() => {
-      console.log(document.cookie.split('; ')[1])
+      console.log(document.cookie)
       try{
         let response = await fetch("http://3.16.154.171:8080/user/", {
           "method": "POST",
@@ -54,7 +54,7 @@ class Projects extends React.Component {
                 "headers": {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + document.cookie.split('; ')[1],
+                "Authorization": "Bearer " + document.cookie,
                 },
               });
 
@@ -97,7 +97,7 @@ class Projects extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + document.cookie.split('; ')[1],
+            "Authorization": "Bearer " + document.cookie,
           },
           "body": JSON.stringify({
             "project_id": parseInt(this.state.joinID),
@@ -119,7 +119,7 @@ class Projects extends React.Component {
               "headers": {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + document.cookie.split('; ')[1],
+                "Authorization": "Bearer " + document.cookie,
               },
             });
               
@@ -142,7 +142,7 @@ class Projects extends React.Component {
                     "headers": {
                     "Accept": "application/json",
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + document.cookie.split('; ')[1],
+                    "Authorization": "Bearer " + document.cookie,
                     },
                   });
 
@@ -173,7 +173,7 @@ class Projects extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + document.cookie.split('; ')[1],
+            "Authorization": "Bearer " + document.cookie,
           },
           "body": JSON.stringify({
             "token": "accessToken",
@@ -196,7 +196,7 @@ class Projects extends React.Component {
               "headers": {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + document.cookie.split('; ')[1],
+                "Authorization": "Bearer " + document.cookie,
               },
             });
               
@@ -219,7 +219,7 @@ class Projects extends React.Component {
                     "headers": {
                     "Accept": "application/json",
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + document.cookie.split('; ')[1],
+                    "Authorization": "Bearer " + document.cookie,
                     },
                   });
 
@@ -252,7 +252,7 @@ class Projects extends React.Component {
             "headers": {
               "Accept": "application/json",
               "Content-Type": "application/json",
-              "Authorization": "Bearer " + document.cookie.split('; ')[1],
+              "Authorization": "Bearer " + document.cookie,
             },
             "body": JSON.stringify({
               "project_name": this.state.addName,
@@ -273,7 +273,7 @@ class Projects extends React.Component {
                 "headers": {
                   "Accept": "application/json",
                   "Content-Type": "application/json",
-                  "Authorization": "Bearer " + document.cookie.split('; ')[1],
+                  "Authorization": "Bearer " + document.cookie,
                 },
               });
                 
@@ -296,7 +296,7 @@ class Projects extends React.Component {
                       "headers": {
                       "Accept": "application/json",
                       "Content-Type": "application/json",
-                      "Authorization": "Bearer " + document.cookie.split('; ')[1],
+                      "Authorization": "Bearer " + document.cookie,
                       },
                     });
 
@@ -330,7 +330,7 @@ class Projects extends React.Component {
           "headers": {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + document.cookie.split('; ')[1],
+            "Authorization": "Bearer " + document.cookie,
           },
           "body":JSON.stringify({"token":"accessToken"})
         });
@@ -359,7 +359,7 @@ class Projects extends React.Component {
         // element in this array. see: https://reactjs.org/docs/lists-and-keys.html
         projects.push(<Project key={i} properties={this.state.projects_list[i]} 
                       updateAvail={updateAvailable} availhw1= {this.state.availhw1} 
-                      availhw2= {this.state.availhw2} token={document.cookie.split('; ')[1]}/>);
+                      availhw2= {this.state.availhw2} token={document.cookie}/>);
     }
 
     return (
